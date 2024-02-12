@@ -29,6 +29,7 @@ impl Layer {
     
     pub fn id(&self) -> u32 { self.id }
     pub fn name(&self) -> &str { &self.name }
+    pub fn class(&self) -> &str { &self.class }
     pub fn offset_x(&self) -> f32 { self.offset_x }
     pub fn offset_y(&self) -> f32 { self.offset_y }
     pub fn parallax_x(&self) -> f32 { self.parallax_x }
