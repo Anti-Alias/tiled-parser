@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::io::Read;
 use roxmltree::{Document, Node};
 use crate::{FillMode, Grid, ObjectAlignment, Tile, TileOffset, TileRenderSize, Result};
@@ -6,24 +5,40 @@ use crate::{FillMode, Grid, ObjectAlignment, Tile, TileOffset, TileRenderSize, R
 
 #[derive(Clone, Default, Debug)]
 pub struct Tileset {
-    pub name: String,
-    pub class: String,
-    pub tile_width: u32,
-    pub tile_height: u32,
-    pub spacing: u32,
-    pub margin: u32,
-    pub tile_count: u32,
-    pub columns: u32,
-    pub object_alignment: ObjectAlignment,
-    pub tile_render_size: TileRenderSize,
-    pub fill_mode: FillMode,
-    pub tile_offset: TileOffset,
-    pub grid: Option<Grid>,
-    pub image: Option<Image>,
-    pub tiles: HashMap<u32, Tile>,
+    name: String,
+    class: String,
+    tile_width: u32,
+    tile_height: u32,
+    spacing: u32,
+    margin: u32,
+    tile_count: u32,
+    columns: u32,
+    object_alignment: ObjectAlignment,
+    tile_render_size: TileRenderSize,
+    fill_mode: FillMode,
+    tile_offset: TileOffset,
+    grid: Option<Grid>,
+    image: Option<Image>,
+    tiles: Vec<Tile>,
 }
 
 impl Tileset {
+
+    pub fn name(&self) -> &str { &self.name }
+    pub fn class(&self) -> &str { &self.class }
+    pub fn tile_width(&self) -> u32 { self.tile_width }
+    pub fn tile_height(&self) -> u32 { self.tile_height }
+    pub fn spacing(&self) -> u32 { self.spacing }
+    pub fn margin(&self) -> u32 { self.margin }
+    pub fn tile_count(&self) -> u32 { self.tile_count }
+    pub fn columns(&self) -> u32 { self.columns }
+    pub fn object_alignment(&self) -> ObjectAlignment { self.object_alignment }
+    pub fn tile_render_size(&self) -> TileRenderSize { self.tile_render_size }
+    pub fn fill_mode(&self) -> FillMode { self.fill_mode }
+    pub fn tile_offset(&self) -> TileOffset { self.tile_offset }
+    pub fn grid(&self) -> Option<Grid> { self.grid }
+    pub fn image(&self) -> Option<&Image> { self.image.as_ref() }
+    pub fn tiles(&self) -> &[Tile] { &self.tiles }
 
     pub fn parse(mut read: impl Read) -> Result<Self> {
         let mut xml_str = String::new();

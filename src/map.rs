@@ -4,20 +4,31 @@ use crate::{Error, Layer, Orientation, Properties, Result, Tileset};
 
 #[derive(Default, Debug)]
 pub struct TiledMap {
-    pub version: String,
-    pub orientation: Orientation,
-    pub render_order: RenderOrder,
-    pub width: u32, 
-    pub height: u32,
-    pub tile_width: u32,
-    pub tile_height: u32,
-    pub tilesets: Vec<TilesetEntry>,
-    pub infinite: bool,
-    pub layers: Vec<Layer>,
-    pub properties: Properties,
+    version: String,
+    orientation: Orientation,
+    render_order: RenderOrder,
+    width: u32, 
+    height: u32,
+    tile_width: u32,
+    tile_height: u32,
+    tilesets: Vec<TilesetEntry>,
+    infinite: bool,
+    layers: Vec<Layer>,
+    properties: Properties,
 }
 
 impl TiledMap {
+    pub fn version(&self) -> &str { &self.version }
+    pub fn orientation(&self) -> Orientation { self.orientation }
+    pub fn render_order(&self) -> RenderOrder { self.render_order }
+    pub fn width(&self) -> u32 { self.width }
+    pub fn height(&self) -> u32 { self.height }
+    pub fn tile_width(&self) -> u32 { self.tile_width }
+    pub fn tile_height(&self) -> u32 { self.tile_height }
+    pub fn tilesets(&self) -> &[TilesetEntry] { &self.tilesets }
+    pub fn infinite(&self) -> bool { self.infinite }
+    pub fn layers(&self) -> &[Layer] { &self.layers }
+    pub fn properties(&self) -> &Properties{ &self.properties }
 
     pub fn parse(mut read: impl Read) -> Result<Self> {
         let mut xml_str = String::new();
@@ -92,11 +103,13 @@ impl TiledMap {
 /// Either embeds the tileset, or references it in another file.
 #[derive(Clone, Debug)]
 pub struct TilesetEntry {
-    pub first_gid: u32,
-    pub kind: TilesetEntryKind,
+    first_gid: u32,
+    kind: TilesetEntryKind,
 }
 
 impl TilesetEntry {
+    pub fn first_gid(&self) -> u32 { self.first_gid }
+    pub fn kind(&self) -> &TilesetEntryKind { &self.kind }
 
     fn parse(entry_node: Node) -> Result<Self> {
         let mut first_gid: u32 = 0;

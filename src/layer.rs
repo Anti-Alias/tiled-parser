@@ -10,22 +10,35 @@ use crate::{Color, Properties, Gid, ParseContext, Result, Error};
 /// Can be a group, tile or object layer.
 #[derive(Debug)]
 pub struct Layer {
-    pub id: u32,
-    pub name: String,
-    pub class: String,
-    pub offset_x: f32,
-    pub offset_y: f32,
-    pub parallax_x: f32,
-    pub parallax_y: f32,
-    pub opacity: f32,
-    pub visible: bool,
-    pub locked: bool,
-    pub tint_color: Color,
-    pub properties: Properties,
-    pub kind: LayerKind,
+    id: u32,
+    name: String,
+    class: String,
+    offset_x: f32,
+    offset_y: f32,
+    parallax_x: f32,
+    parallax_y: f32,
+    opacity: f32,
+    visible: bool,
+    locked: bool,
+    tint_color: Color,
+    properties: Properties,
+    kind: LayerKind,
 }
 
 impl Layer {
+    
+    pub fn id(&self) -> u32 { self.id }
+    pub fn name(&self) -> &str { &self.name }
+    pub fn offset_x(&self) -> f32 { self.offset_x }
+    pub fn offset_y(&self) -> f32 { self.offset_y }
+    pub fn parallax_x(&self) -> f32 { self.parallax_x }
+    pub fn parallax_y(&self) -> f32 { self.parallax_y }
+    pub fn opacity(&self) -> f32 { self.opacity }
+    pub fn visible(&self) -> bool { self.visible }
+    pub fn locked(&self) -> bool { self.locked }
+    pub fn tint_color(&self) -> Color { self.tint_color }
+    pub fn properties(&self) -> &Properties { &self.properties }
+    pub fn kind(&self) -> &LayerKind { &self.kind }
 
     fn new(fields: CommonLayerFields, kind: LayerKind) -> Self {
         Self {

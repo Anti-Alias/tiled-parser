@@ -11,7 +11,11 @@ impl Properties {
         self.0.get(name)
     }
 
-    pub fn parse(properties_node: Node) -> Result<Self> {
+    pub fn contains(&self, name: &str) -> bool {
+        self.0.contains_key(name)
+    }
+
+    pub(crate) fn parse(properties_node: Node) -> Result<Self> {
         let mut result = Self::default();
         for child_node in properties_node.children() {
             let name = child_node.tag_name().name();
