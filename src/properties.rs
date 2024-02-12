@@ -26,11 +26,11 @@ impl Properties {
     fn parse_property(&mut self, property_node: Node) -> Result<()> {
         let name = match property_node.attribute("name") {
             Some(name) => name,
-            None => return Err(Error::MissingAttribute("name")),
+            None => return Err(Error::ParsingError),
         };
         let str_value = match property_node.attribute("value") {
             Some(value) => value,
-            None => return Err(Error::MissingAttribute("value".into())),
+            None => return Err(Error::ParsingError),
         };
         let str_type = property_node.attribute("type");
         let value = PropertyValue::parse(str_value, str_type)?;
@@ -57,9 +57,9 @@ impl PropertyValue {
             Some("int") => Ok(Self::Int(value.parse()?)),
             Some("float") => Ok(Self::Float(value.parse()?)),
             Some("bool") => Ok(Self::Bool(value.parse()?)),
-            Some("color") => Ok(Self::Color(Color::from_hex_argb(value)?)),
+            Some("color") => Ok(Self::Color(value.parse()?)),
             Some("file") => Ok(Self::File(value.into())),
-            Some(type_name) => Err(Error::InvalidAttributeValue(type_name.into()))
+            Some(_) => Err(Error::ParsingError)
         }
     }
 

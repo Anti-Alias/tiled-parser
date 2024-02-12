@@ -1,48 +1,43 @@
-use std::num::{ParseIntError, ParseFloatError};
+use std::num::{ParseFloatError, ParseIntError};
 use std::str::ParseBoolError;
-use base64::DecodeError;
-use derive_more::*;
+use thiserror::Error;
 
-#[derive(Error, Display, From, Debug)]
+#[derive(Error, Debug)]
 pub enum Error {
-    XmlError(roxmltree::Error),
-    #[display(fmt="{_0}")]
-    ParseIntError(ParseIntError),
-    ParseFloatError(ParseFloatError),
-    ParseBoolError(ParseBoolError),
-    Base64Error(DecodeError),
-    ParseColorError,
-    IOError(std::io::Error),
-    #[display(fmt="Unexpected tag {_0}")]
-    #[from(ignore)]
-    #[error(ignore)]
-    UnexpectedTagError(String),
-    #[display(fmt="Unexpected value {_0}")]
-    #[from(ignore)]
-    #[error(ignore)]
-    InvalidAttributeValue(String),
-    #[display(fmt="Invalid node")]
-    InvalidNode,
-    #[display(fmt="Missing attribute {_0}")]
-    #[from(ignore)]
-    #[error(ignore)]
-    MissingAttribute(&'static str),
-    #[display(fmt="Missing layer data")]
-    MissingLayerData,
-    #[display(fmt="Missing child with tag name {_0}")]
-    #[from(ignore)]
-    #[error(ignore)]
-    MissingChild(&'static str),
-    #[display(fmt="Embedded images not supported")]
-    EmbeddedImagesNotSupported,
-    #[display(fmt="Unsupported encoding/compression")]
-    UnsupportedEncodingAndCompression,
-    #[display(fmt="Layer missing data")]
-    LayerMissingData,
-    #[display(fmt="Invalid GID")]
-    InvalidGid,
-    #[display(fmt="Referenced tile not found")]
-    TileNotFound,
+    #[error("Failed to parse tmx file")]
+    ParsingError,
+    #[error(transparent)]
+    IOError(#[from] std::io::Error),
+    #[error("Failed to parse layer")]
+    InvalidLayerError,
+    #[error("Failed to decode tile layers")]
+    DecodeLayerError,
+    #[error("XML parsing failed")]
+    XmlParsingError,
+}
+
+impl From<ParseBoolError> for Error {
+    fn from(_value: ParseBoolError) -> Self {
+        Self::ParsingError
+    }
+}
+
+impl From<ParseIntError> for Error {
+    fn from(_value: ParseIntError) -> Self {
+        Self::ParsingError
+    }
+}
+
+impl From<ParseFloatError> for Error {
+    fn from(_value: ParseFloatError) -> Self {
+        Self::ParsingError
+    }
+}
+
+impl From<roxmltree::Error> for Error {
+    fn from(_value: roxmltree::Error) -> Self {
+        Self::XmlParsingError
+    }
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

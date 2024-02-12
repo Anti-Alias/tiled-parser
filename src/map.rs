@@ -1,5 +1,4 @@
 use std::io::Read;
-
 use roxmltree::{Document, Node};
 use crate::{Error, Layer, Orientation, Properties, Result, Tileset};
 
@@ -49,7 +48,7 @@ impl TiledMap {
             let value = attribute.value();
             match name {
                 "version" => self.version = String::from(value),
-                "orientation" => self.orientation = Orientation::from_str(value)?,
+                "orientation" => self.orientation = Orientation::parse(value)?,
                 "renderorder" => self.render_order = RenderOrder::from_str(value)?,
                 "width" => self.width = value.parse()?,
                 "height" => self.height = value.parse()?,
@@ -58,7 +57,7 @@ impl TiledMap {
                 "infinite" => self.infinite = match value {
                     "0" => false,
                     "1" => true,
-                    _ => return Err(Error::InvalidAttributeValue(value.into())),
+                    _ => return Err(Error::ParsingError),
                 },
                 _ => {}
             }
@@ -164,7 +163,7 @@ impl RenderOrder {
             "right-up" => Ok(Self::RightUp),
             "left-down" => Ok(Self::LeftDown),
             "left-up" => Ok(Self::LeftUp),
-            _ => Err(Error::InvalidAttributeValue(value.into()))
+            _ => Err(Error::ParsingError)
         }
     }
 }

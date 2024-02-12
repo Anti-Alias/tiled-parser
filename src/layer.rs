@@ -1,7 +1,6 @@
 use std::io::Read;
 use std::ops::Deref;
 use base64::prelude::*;
-use derive_more::*;
 use roxmltree::Node;
 use flate2::read::{GzDecoder, ZlibDecoder};
 use crate::{Color, Properties, Gid, ParseContext, Result, Error};
@@ -100,7 +99,7 @@ impl TileLayer {
                 _ => {}
             }
         }
-        let data_node = layer_node.first_element_child().ok_or(Error::MissingChild("data"))?;
+        let data_node = layer_node.first_element_child().ok_or(Error::InvalidLayerError)?;
         match ctx.infinite {
             true => parse_infinite_layer_data(&mut result, data_node, ctx)?,
             false => parse_finite_layer_data(&mut result, data_node, ctx)?,
@@ -126,7 +125,7 @@ impl TileLayer {
 }
 
 /// A layer containing other[`Layer`]s.
-#[derive(Default, Debug, Deref)]
+#[derive(Default, Debug)]
 pub struct GroupLayer(pub Vec<Layer>);
 impl GroupLayer {
     pub(crate) fn parse(group_node: Node, ctx: &ParseContext) -> Result<Self> {
@@ -205,17 +204,9 @@ impl CommonLayerFields {
                 "parallaxx" => common.parallax_x = attr.value().parse()?,
                 "parallaxy" => common.parallax_y = attr.value().parse()?,
                 "opacity" => common.opacity = attr.value().parse()?,
-                "visible" => common.visible = match attr.value() {
-                    "0" => false,
-                    "1" => true,
-                    _ => return Err(Error::InvalidAttributeValue(attr.value().into())),
-                },
-                "locked" => common.locked = match attr.value() {
-                    "0" => false,
-                    "1" => true,
-                    _ => return Err(Error::InvalidAttributeValue(attr.value().into())),
-                },
-                "tintcolor" => common.tint_color = Color::from_hex_argb(attr.value())?,
+                "tintcolor" => common.tint_color = attr.value().parse()?,
+                "visible" => common.visible = parse_bool(attr.value())?,
+                "locked" => common.locked = parse_bool(attr.value())?,
                 _ => {}
             }
         }
@@ -228,11 +219,19 @@ impl CommonLayerFields {
     }
 }
 
+fn parse_bool(value: &str) -> Result<bool> {
+    match value {
+        "0" => Ok(false),
+        "1" => Ok(true),
+        _ => return Err(Error::InvalidLayerError),
+    }
+}
+
 /// Parses tiles in a finite layer's data node.
 fn parse_finite_layer_data(layer: &mut TileLayer, data_node: Node, ctx: &ParseContext) -> Result<()> {
     let encoding = data_node.attribute("encoding");
     let compression = data_node.attribute("compression");
-    let tile_gids = data_node.text().ok_or(Error::MissingLayerData)?.trim();
+    let tile_gids = data_node.text().ok_or(Error::InvalidLayerError)?.trim();
     let tile_gids = parse_tile_gids(tile_gids, encoding, compression)?;
     let tile_gids = tile_gids.into_iter().map(|gid_int| Gid::resolve(gid_int, ctx.tilesets)).collect();
     layer.tile_gids = tile_gids;
@@ -273,7 +272,9 @@ fn parse_infinite_layer_data(layer: &mut TileLayer, data_node: Node, ctx: &Parse
         }
         let max_x = x + width as i32;
         let max_y = y + height as i32;
-        let tile_gids = chunk_node.text().ok_or(Error::MissingLayerData)?.trim();
+        let tile_gids = chunk_node
+            .text()
+            .ok_or(Error::InvalidLayerError)?.trim();
         let tile_gids = parse_tile_gids(tile_gids, encoding, compression)?;
         let tile_gids: Vec<Gid> = tile_gids.into_iter().map(|gid_int| Gid::resolve(gid_int, ctx.tilesets)).collect();
         chunks.push(Chunk { min_x: x, min_y: y, max_x, max_y, tile_gids });
@@ -322,24 +323,24 @@ fn parse_tile_gids(layer_data: &str, encoding: Option<&str>, compression: Option
             Ok(parsed)
         },
         (Some("base64"), Some("gzip")) => {
-            let decoded = decode_base64(layer_data.as_bytes())?;
+            let decoded = decode_base64(layer_data.as_bytes()).map_err(|_| Error::DecodeLayerError)?;
             let decompressed = GzDecoder::new(decoded.deref());
             let parsed = parse_bytes(decompressed)?;
             Ok(parsed)
         },
         (Some("base64"), Some("zlib")) => {
-            let decoded = decode_base64(layer_data.as_bytes())?;
+            let decoded = decode_base64(layer_data.as_bytes()).map_err(|_| Error::DecodeLayerError)?;
             let decompressed = ZlibDecoder::new(decoded.deref());
             let parsed = parse_bytes(decompressed)?;
             Ok(parsed)
         },
         (Some("base64"), Some("zstd")) => {
             let decoded = decode_base64(layer_data.as_bytes())?;
-            let decompressed = zstd::stream::Decoder::new(decoded.deref())?;
+            let decompressed = zstd::stream::Decoder::new(decoded.deref()).map_err(|_| Error::DecodeLayerError)?;
             let parsed = parse_bytes(decompressed)?;
             Ok(parsed)
         },
-        _ => return Err(Error::UnsupportedEncodingAndCompression),
+        _ => return Err(Error::DecodeLayerError),
     }
 }
 
@@ -353,8 +354,7 @@ fn parse_csv(csv: &str) -> Result<Vec<u32>> {
 }
 
 fn decode_base64(encoded_bytes: &[u8]) -> Result<Vec<u8>> {
-    let decoded_bytes = BASE64_STANDARD.decode(&encoded_bytes)?;
-    Ok(decoded_bytes)
+    BASE64_STANDARD.decode(&encoded_bytes).map_err(|_| Error::DecodeLayerError)
 }
 
 fn parse_bytes(mut read: impl Read) -> Result<Vec<u32>> {
