@@ -1,6 +1,6 @@
 use std::io::Read;
 use roxmltree::{Document, Node};
-use crate::{FillMode, Grid, ObjectAlignment, Tile, TileOffset, TileRenderSize, Result};
+use crate::{FillMode, Grid, ObjectAlignment, Result, TileOffset, TileRenderSize};
 
 
 #[derive(Clone, Default, Debug)]
@@ -19,7 +19,6 @@ pub struct Tileset {
     tile_offset: TileOffset,
     grid: Option<Grid>,
     image: Option<Image>,
-    tiles: Vec<Tile>,
 }
 
 impl Tileset {
@@ -38,7 +37,6 @@ impl Tileset {
     pub fn tile_offset(&self) -> TileOffset { self.tile_offset }
     pub fn grid(&self) -> Option<Grid> { self.grid }
     pub fn image(&self) -> Option<&Image> { self.image.as_ref() }
-    pub fn tiles(&self) -> &[Tile] { &self.tiles }
 
     pub fn parse(mut read: impl Read) -> Result<Self> {
         let mut xml_str = String::new();

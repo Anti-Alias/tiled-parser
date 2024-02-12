@@ -1,15 +1,24 @@
 use crate::{Image, Properties, TilesetEntry};
 
 
-#[derive(Clone, Default, Debug)]
-pub struct Tile {
-    properties: Properties,
-    image: Option<Image>,
+#[derive(Clone, Debug)]
+pub struct Tile<'a> {
+    pub id: u32,
+    pub(crate) data: &'a TileData,
 }
 
-impl Tile {
-    pub fn properties(&self) -> &Properties { &self.properties }
-    pub fn image(&self) -> Option<&Image> { self.image.as_ref() }
+impl<'a> Tile<'a> {
+    pub(crate) fn new(id: u32, data: &'a TileData) -> Self {
+        Self { id, data }
+    }
+    pub fn properties(&self) -> &Properties { &self.data.properties }
+    pub fn image(&self) -> Option<&Image> { self.data.image.as_ref() }
+}
+
+#[derive(Clone, Default, Debug)]
+pub(crate) struct TileData {
+    properties: Properties,
+    image: Option<Image>,
 }
 
 /// Global id of a [`Tile`] within a map.
