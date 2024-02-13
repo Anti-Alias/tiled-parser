@@ -190,13 +190,16 @@ mod test {
 
     #[test]
     fn test_finite() {
+
+        // Loads map and gets first layer
         let xml = include_str!("test_data/finite.tmx");
         let map = TiledMap::parse_str(xml).unwrap();
         let layer = &map.layers()[0];
         let tile_layer = layer.as_tile_layer().unwrap();
-        let tile_a_gid = tile_layer.get_gid(0, 0);
-        let tile_b_gid = tile_layer.get_gid(5, 2);
 
+        // Checks the contents of those tiles
+        let tile_a_gid = tile_layer.gid_at(0, 0);
+        let tile_b_gid = tile_layer.gid_at(5, 2);
         let expected = Gid::Value {
             tileset_index: 2,
             tile_id: 0,
@@ -215,24 +218,81 @@ mod test {
 
     #[test]
     fn test_infinite() {
+
+        // Loads map and gets first layer
         let xml = include_str!("test_data/infinite.tmx");
         let map = TiledMap::parse_str(xml).unwrap();
-        println!("{map:#?}");
+        let layer = &map.layers()[0];
+        let tile_layer = layer.as_tile_layer().unwrap();
+
+        // Checks the contents of those tiles
+        let tile_a_gid = tile_layer.gid_at(0, 0);
+        let tile_b_gid = tile_layer.gid_at(5, 2);
+        let expected = Gid::Value {
+            tileset_index: 2,
+            tile_id: 0,
+            flip: Flip(0b0000_1000),
+        };
+        assert_eq!(expected, tile_a_gid);
+        
+        let expected = Gid::Value {
+            tileset_index: 0,
+            tile_id: 97,
+            flip: Flip(0b0000_0000),
+        };
+        assert_eq!(expected, tile_b_gid);
+    }
+
+    #[test]
+    fn test_infinite_iter() {
+
+        // Loads map and gets first layer
+        let xml = include_str!("test_data/infinite.tmx");
+        let map = TiledMap::parse_str(xml).unwrap();
+        let layer = &map.layers()[0];
+        let tile_layer = layer.as_tile_layer().unwrap();
+
+        // Iterates over all non-null tile gids
+        let mut gids = tile_layer.gids().non_null();
+
+        // Checks first tile
+        let expected_x: i32 = -4;
+        let expected_y: i32 = -2;
+        let expected_gid = Gid::Value {
+            tileset_index: 0,
+            tile_id: 0,
+            flip: Flip(0b0000_0000),
+        };
+        assert_eq!(Some((expected_x, expected_y, expected_gid)), gids.next());
+
+        // Checks second tile
+        let expected_x: i32 = 0;
+        let expected_y: i32 = 0;
+        let expected_gid = Gid::Value {
+            tileset_index: 2,
+            tile_id: 0,
+            flip: Flip(0b0000_1000),
+        };
+        assert_eq!(Some((expected_x, expected_y, expected_gid)), gids.next());
     }
 
     #[test]
     fn test_flip() {
+
+        // Loads map and gets first layer
         let xml = include_str!("test_data/flip.tmx");
         let map = TiledMap::parse_str(xml).unwrap();
         let layer = &map.layers()[0];
         let tile_layer = layer.as_tile_layer().unwrap();
         
-        let gid = tile_layer.get_gid(0, 0);
-        let gid_rot_90 = tile_layer.get_gid(1, 0);
-        let gid_rot_180 = tile_layer.get_gid(2, 0);
-        let gid_rot_270 = tile_layer.get_gid(3, 0);
-        let gid_other_tileset = tile_layer.get_gid(2, 1);
+        // Gets ids of numerous tiles
+        let gid = tile_layer.gid_at(0, 0);
+        let gid_rot_90 = tile_layer.gid_at(1, 0);
+        let gid_rot_180 = tile_layer.gid_at(2, 0);
+        let gid_rot_270 = tile_layer.gid_at(3, 0);
+        let gid_other_tileset = tile_layer.gid_at(2, 1);
 
+        // Checks that they're flipped correctly
         let expected = Gid::Value {
             tileset_index: 0,
             tile_id: 0,

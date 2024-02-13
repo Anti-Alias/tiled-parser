@@ -14,6 +14,7 @@ impl<'a> Tile<'a> {
         Self { id, tileset, data }
     }
     pub fn id(&self) -> u32 { self.id }
+
     pub fn typ(&self) -> &str { &self.data.typ }
     pub fn properties(&self) -> &Properties { &self.data.properties }
     pub fn image(&self) -> Option<&Image> { self.data.image.as_ref() }
@@ -25,7 +26,7 @@ impl<'a> Tile<'a> {
 
     /// Region of an image this tile belongs to.
     /// None if the tileset it belongs to is a collection.
-    pub fn region(&self) -> Option<Region> {
+    pub fn region(&self) -> Option<TilesetRegion> {
         if self.tileset.image().is_none() { return None }
         let columns = self.tileset.columns();
         let tile_width = self.tileset.tile_width();
@@ -36,7 +37,7 @@ impl<'a> Tile<'a> {
         let y = tile_y * tile_height;
         let width = x + tile_width;
         let height = y + tile_height;
-        Some(Region { x, y, width, height })
+        Some(TilesetRegion { x, y, width, height })
     }
 }
 
@@ -82,8 +83,9 @@ impl TileData {
 }
 
 /// The region of an image a tile resides in.
+/// Values are stored in pixels.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
-pub struct Region {
+pub struct TilesetRegion {
     pub x: u32,
     pub y: u32,
     pub width: u32,

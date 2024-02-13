@@ -3,7 +3,7 @@ use std::ops::Deref;
 use base64::prelude::*;
 use roxmltree::Node;
 use flate2::read::{GzDecoder, ZlibDecoder};
-use crate::{Color, Properties, Gid, ParseContext, Result, Error};
+use crate::{Color, Error, Gid, ParseContext, Properties, Result};
 
 
 /// A layer in a [`TiledMap`](crate::map::TiledMap).
@@ -108,25 +108,55 @@ impl LayerKind {
 /// Beware.
 #[derive(Debug, Default)]
 pub struct TileLayer {
-    /// Supposed width of the tile layer, sourced from the tmx file.
-    /// Meaningless in an infinite map and should not be programmed against.
-    pub width: u32,
-    /// Supposed height of the tile layer, sourced from the tmx file.
-    /// Meaningless in an infinite map and should not be programmed against.
-    pub height: u32,
-    /// Calculated width. Equals to [`width`](Self::width) if map is finite. Calculated from chunks if map is infinite.
-    pub calc_width: u32,
-    /// Calculated height. Equals to [`height`][Self::height] if map is finite. Calculated from chunks if map is infinite.
-    pub calc_height: u32,
-    /// Minimum tile x. 0 if map is finite.  Calculated from chunks if map is infinite.
-    pub min_x: i32,
-    /// Minimum tile y. 0 if map is finite.  Calculated from chunks if map is infinite.
-    pub min_y: i32,
-    /// GIDs of all tiles, stored in a flat vec.
-    pub tile_gids: Vec<Gid>,
+    width: u32,
+    height: u32,
+    region: TileLayerRegion,
+    tile_gids: Vec<Gid>,
 }
 
 impl TileLayer {
+    /// Supposed width of the tile layer.
+    /// Meaningless in an infinite map and should not be programmed against.
+    pub fn width(&self) -> u32 { self.width }
+
+    /// Supposed height of the tile layer.
+    /// Meaningless in an infinite map and should not be programmed against.
+    pub fn height(&self) -> u32 { self.width }
+
+    /// A rectangular region that encompases all tiles in the layer.
+    /// Useful when manual iteration over tiles is required.
+    pub fn region(&self) -> TileLayerRegion { self.region }
+
+    /// Gets the [`Gid`] of the tile at the specified coordinates.
+    /// If out of bounds, returns [`Gid::Null`].
+    pub fn gid_at(&self, x: i32, y: i32) -> Gid {
+        let x = x - self.region.x;
+        let y = y - self.region.y;
+        let region_width = self.region.width as i32;
+        let region_height = self.region.height as i32;
+        if x < 0 || x >= region_width {
+            return Gid::default();
+        }
+        if y < 0 || y >= region_height {
+            return Gid::default();
+        }
+        self.tile_gids[(y * region_width + x) as usize]
+    }
+
+    /// Iterates over all gids in the layer, including null ones.
+    /// Includes x, y coordinates (in tiles) of each tile.
+    pub fn gids(&self) -> Gids<'_> {
+        Gids {
+            layer: self,
+            x: 0,
+            y: 0,
+            idx: 0,
+            width: self.region.width,
+            total: self.tile_gids.len(),
+            off_x: self.region.x,
+            off_y: self.region.y,
+        }
+    }
 
     pub(crate) fn parse(layer_node: Node, ctx: &ParseContext) -> Result<Self> {
         let mut result = Self::default();
@@ -144,28 +174,77 @@ impl TileLayer {
         };
         Ok(result)
     }
+}
 
-    /// Helper method that gets the [`Gid`] of the tile at the specified coordinates.
-    /// If out of bounds, returns [`Gid::Null`].
-    pub fn get_gid(&self, x: i32, y: i32) -> Gid {
-        let x = x - self.min_x;
-        let y = y - self.min_y;
-        let calc_width = self.calc_width as i32;
-        let calc_height = self.calc_height as i32;
-        if x < 0 || x >= calc_width {
-            return Gid::default();
-        }
-        if y < 0 || y >= calc_height {
-            return Gid::default();
-        }
-        self.tile_gids[(y * calc_width + x) as usize]
+/// Iterator over gids in a [`TileLayer`].
+pub struct Gids<'a> {
+    layer: &'a TileLayer,
+    x: u32,
+    y: u32,
+    idx: usize,
+    width: u32,
+    total: usize,
+    off_x: i32,
+    off_y: i32,
+}
+
+impl<'a> Gids<'a> {
+    /// Filters out null gids.
+    pub fn non_null(self) -> NonNullGids<'a> {
+        NonNullGids(self)
     }
 }
 
-/// A layer containing other[`Layer`]s.
+impl<'a> Iterator for Gids<'a> {
+    type Item = (i32, i32, Gid);
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.idx >= self.total as usize {
+            return None;
+        }
+        let next_x = self.x as i32 + self.off_x;
+        let next_y = self.y as i32 + self.off_y;
+        let next_gid = self.layer.tile_gids[self.idx];
+        self.idx += 1;
+        self.x += 1;
+        if self.x == self.width {
+            self.x = 0;
+            self.y += 1;
+        }
+        Some((next_x, next_y, next_gid))
+    }
+}
+
+/// Iterator over non-null gids in a [`TileLayer`].
+pub struct NonNullGids<'a>(Gids<'a>);
+impl<'a> Iterator for NonNullGids<'a> {
+    type Item = (i32, i32, Gid);
+    fn next(&mut self) -> Option<Self::Item> {
+        while let Some((x, y, gid)) = self.0.next() {
+            if gid != Gid::Null {
+                return Some((x, y, gid));
+            }
+        }
+        None
+    }
+}
+
+/// A rectangular region in a [`TileLayer`] that encompasses all tiles.
+/// Useful for manual iteration.
+#[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
+pub struct TileLayerRegion {
+    pub x: i32,
+    pub y: i32,
+    pub width: u32,
+    pub height: u32,
+}
+
+/// A layer containing other [`Layer`]s.
 #[derive(Default, Debug)]
-pub struct GroupLayer(pub Vec<Layer>);
+pub struct GroupLayer(Vec<Layer>);
 impl GroupLayer {
+
+    pub fn layers(&self) -> &[Layer] { &self.0 }
+
     pub(crate) fn parse(group_node: Node, ctx: &ParseContext) -> Result<Self> {
         let mut result = Self::default();
         for node in group_node.children() {
@@ -273,8 +352,8 @@ fn parse_finite_layer_data(layer: &mut TileLayer, data_node: Node, ctx: &ParseCo
     let tile_gids = parse_tile_gids(tile_gids, encoding, compression)?;
     let tile_gids = tile_gids.into_iter().map(|gid_int| Gid::resolve(gid_int, ctx.tilesets)).collect();
     layer.tile_gids = tile_gids;
-    layer.calc_width = layer.width;
-    layer.calc_height = layer.height;
+    layer.region.width = layer.width;
+    layer.region.height = layer.height;
     Ok(())
 }
 
@@ -347,10 +426,10 @@ fn parse_infinite_layer_data(layer: &mut TileLayer, data_node: Node, ctx: &Parse
 
     // Writes to layer
     layer.tile_gids = raw_tile_gids;
-    layer.calc_width = raw_width;
-    layer.calc_height = raw_height;
-    layer.min_x = global_min_x;
-    layer.min_y = global_min_y;
+    layer.region.x = global_min_x;
+    layer.region.y = global_min_y;
+    layer.region.width = raw_width;
+    layer.region.height = raw_height;
     Ok(())
 }
 
