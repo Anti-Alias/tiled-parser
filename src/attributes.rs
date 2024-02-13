@@ -105,6 +105,7 @@ impl TileOffset {
     }
 }
 
+/// Isometric orientation.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
 pub struct Grid {
     pub orientation: Orientation,
@@ -127,6 +128,7 @@ impl Grid {
     }
 }
 
+/// An RGBA color.
 #[repr(C)]
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Color {

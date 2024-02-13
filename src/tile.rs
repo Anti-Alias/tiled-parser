@@ -109,6 +109,7 @@ impl Gid {
 
     /// Converts a tiled map file's gid to a [`Gid`].
     pub(crate) fn resolve(gid: u32, entries: &[TilesetEntry]) -> Self {
+        if gid == 0 { return Gid::Null }
         let flip_bits = (gid & Self::FLIP_BITS) >> 28;
         let gid = gid & !Self::FLIP_BITS;
         for (tileset_index, tileset_entry) in entries.iter().enumerate().rev() {
@@ -124,7 +125,7 @@ impl Gid {
     }
 }
 
-/// Contains information about how a tile is flipped in the map.
+/// Contains information about how a tile is flipped and rotated in a map.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Default)]
 pub struct Flip(pub u8);
 impl Flip {
@@ -134,19 +135,19 @@ impl Flip {
     pub const FLIPPED_DIAGONALLY_FLAG: u8       = 0b00000010;
     pub const ROTATED_HEXAGONAL_120_FLAG: u8    = 0b00000001;
 
-    pub fn flipped_horizontal(self) -> bool {
+    pub fn is_flipped_horizontal(self) -> bool {
         self.0 & Self::FLIPPED_HORIZONTALLY_FLAG != 0
     }
 
-    pub fn flipped_vertical(self) -> bool {
+    pub fn is_flipped_vertical(self) -> bool {
         self.0 & Self::FLIPPED_VERTICALLY_FLAG != 0
     }
 
-    pub fn flipped_diagonal(self) -> bool {
+    pub fn is_flipped_diagonal(self) -> bool {
         self.0 & Self::FLIPPED_DIAGONALLY_FLAG != 0
     }
 
-    pub fn rotated_hex_120(self) -> bool {
+    pub fn is_rotated_hex_120(self) -> bool {
         self.0 & Self::ROTATED_HEXAGONAL_120_FLAG != 0
     }
 }
@@ -156,7 +157,7 @@ impl std::fmt::Debug for Flip {
         write!(
             f,
             "Flip {{ horizontal: {}, vertical: {}, diagonal: {}, rotated_hex_120: {} }}",
-            self.flipped_horizontal(), self.flipped_vertical(), self.flipped_diagonal(), self.rotated_hex_120()
+            self.is_flipped_horizontal(), self.is_flipped_vertical(), self.is_flipped_diagonal(), self.is_rotated_hex_120()
         )
     }
 }
