@@ -22,6 +22,22 @@ impl<'a> Tile<'a> {
     pub fn width(&self) -> Option<u32> { self.data.width }
     pub fn height(&self) -> Option<u32> { self.data.height }
     pub fn tileset(&self) -> &'a Tileset { self.tileset }
+
+    /// Region of an image this tile belongs to.
+    /// None if the tileset it belongs to is a collection.
+    pub fn region(&self) -> Option<Region> {
+        if self.tileset.image().is_none() { return None }
+        let columns = self.tileset.columns();
+        let tile_width = self.tileset.tile_width();
+        let tile_height = self.tileset.tile_height();
+        let tile_x = self.id % columns;
+        let tile_y = self.id / columns;
+        let x = tile_x * tile_width;
+        let y = tile_y * tile_height;
+        let width = x + tile_width;
+        let height = y + tile_height;
+        Some(Region { x, y, width, height })
+    }
 }
 
 #[derive(Clone, Default, Debug)]
@@ -65,6 +81,15 @@ impl TileData {
     }
 }
 
+/// The region of an image a tile resides in.
+#[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
+pub struct Region {
+    pub x: u32,
+    pub y: u32,
+    pub width: u32,
+    pub height: u32,
+}
+
 /// Global id of a [`Tile`] within a map.
 /// Includes both the tileset index and tile index for faster lookups.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Default, Debug)]
@@ -86,7 +111,7 @@ impl Gid {
     pub(crate) fn resolve(gid: u32, entries: &[TilesetEntry]) -> Self {
         let flip_bits = (gid & Self::FLIP_BITS) >> 28;
         let gid = gid & !Self::FLIP_BITS;
-        for (tileset_index, tileset_entry) in entries.iter().enumerate() {
+        for (tileset_index, tileset_entry) in entries.iter().enumerate().rev() {
             if gid >= tileset_entry.first_gid() {
                 return Gid::Value {
                     tileset_index: tileset_index as u16,

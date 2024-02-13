@@ -59,6 +59,14 @@ impl Layer {
         }
     }
 
+    pub fn as_tile_layer(&self) -> Option<&TileLayer> {
+        self.kind.as_tile_layer()
+    }
+
+    pub fn as_group_layer(&self) -> Option<&GroupLayer> {
+        self.kind.as_group_layer()
+    }
+
     pub(crate) fn parse_tile_layer(tile_layer_node: Node, ctx: &ParseContext) -> Result<Self> {
         let fields = CommonLayerFields::parse(tile_layer_node)?;
         let kind = LayerKind::TileLayer(TileLayer::parse(tile_layer_node, ctx)?);

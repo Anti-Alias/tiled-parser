@@ -192,7 +192,25 @@ mod test {
     fn test_finite() {
         let xml = include_str!("test_data/finite.tmx");
         let map = TiledMap::parse_str(xml).unwrap();
-        println!("{map:#?}");
+        let layer = &map.layers()[0];
+        let tile_layer = layer.as_tile_layer().unwrap();
+        let tile_a_gid = tile_layer.get_gid(0, 0);
+        let tile_b_gid = tile_layer.get_gid(5, 2);
+
+        let expected = Gid::Value {
+            tileset_index: 2,
+            tile_id: 0,
+            flip: Flip(0b0000_1000),
+        };
+        assert_eq!(expected, tile_a_gid);
+        
+        let expected = Gid::Value {
+            tileset_index: 0,
+            tile_id: 97,
+            flip: Flip(0b0000_0000),
+        };
+        assert_eq!(expected, tile_b_gid);
+
     }
 
     #[test]
@@ -207,7 +225,7 @@ mod test {
         let xml = include_str!("test_data/flip.tmx");
         let map = TiledMap::parse_str(xml).unwrap();
         let layer = &map.layers()[0];
-        let tile_layer = layer.kind().as_tile_layer().unwrap();
+        let tile_layer = layer.as_tile_layer().unwrap();
         
         let gid = tile_layer.get_gid(0, 0);
         let gid_rot_90 = tile_layer.get_gid(1, 0);
@@ -245,8 +263,8 @@ mod test {
         assert_eq!(expected, gid_rot_270);
 
         let expected = Gid::Value {
-            tileset_index: 0,
-            tile_id: 1,
+            tileset_index: 1,
+            tile_id: 0,
             flip: Flip(0b0000_0000),
         };
         assert_eq!(expected, gid_other_tileset);
