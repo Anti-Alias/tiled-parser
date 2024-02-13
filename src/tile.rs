@@ -105,13 +105,13 @@ pub enum Gid {
 
 impl Gid {
 
-    const FLIP_BITS: u32 = 0b11110000_00000000_00000000_00000000;
+    const FLIP_FLAGS: u32 = 0b11110000_00000000_00000000_00000000;
 
     /// Converts a tiled map file's gid to a [`Gid`].
     pub(crate) fn resolve(gid: u32, entries: &[TilesetEntry]) -> Self {
         if gid == 0 { return Gid::Null }
-        let flip_bits = (gid & Self::FLIP_BITS) >> 28;
-        let gid = gid & !Self::FLIP_BITS;
+        let flip_bits = (gid & Self::FLIP_FLAGS) >> 28;
+        let gid = gid & !Self::FLIP_FLAGS;
         for (tileset_index, tileset_entry) in entries.iter().enumerate().rev() {
             if gid >= tileset_entry.first_gid() {
                 return Gid::Value {

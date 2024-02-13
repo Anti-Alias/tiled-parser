@@ -16,6 +16,14 @@
    <property name="is_jerry" type="bool" value="true"/>
   </properties>
  </tile>
+ <tile id="144">
+  <animation>
+   <frame tileid="144" duration="100"/>
+   <frame tileid="145" duration="100"/>
+   <frame tileid="146" duration="100"/>
+   <frame tileid="147" duration="100"/>
+  </animation>
+ </tile>
  <wangsets>
   <wangset name="grass" type="corner" tile="-1"/>
  </wangsets>
