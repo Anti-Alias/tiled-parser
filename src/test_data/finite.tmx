@@ -6,10 +6,20 @@
   <tileoffset x="1" y="2"/>
   <grid orientation="orthogonal" width="25" height="25"/>
   <image source="tilesets/vikings_of_midgard_alt.png" width="320" height="200"/>
+  <tile id="0">
+   <properties>
+    <property name="is_steve" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="is_steve" type="bool" value="false"/>
+   </properties>
+  </tile>
  </tileset>
  <layer id="1" name="below" width="10" height="10">
   <data encoding="csv">
-1185,86,1,1,12,1,86,1,1,1,
+1185,1186,1,1,12,1,86,1,1,1,
 1,1,1,27,28,29,1,1,1,1,
 1,1,1,43,44,98,1,1,1,1,
 1,1,1,59,60,61,1,1,1,86,

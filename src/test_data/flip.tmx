@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.10.1" orientation="orthogonal" renderorder="right-down" width="4" height="4" tilewidth="64" tileheight="64" infinite="0" nextlayerid="2" nextobjectid="1">
+ <tileset firstgid="1" name="cardinal_tile" tilewidth="64" tileheight="64" tilecount="1" columns="0">
+  <grid orientation="orthogonal" width="1" height="1"/>
+  <tile id="0">
+   <image width="64" height="64" source="tilesets/cardinal_tile.png"/>
+  </tile>
+ </tileset>
+ <tileset firstgid="2" source="tilesets/vikings_of_midgard.tsx"/>
+ <layer id="1" name="Tile Layer 1" width="4" height="4">
+  <data encoding="csv">
+1,2684354561,3221225473,1610612737,
+2147483649,1073741825,2,0,
+0,0,0,0,
+0,0,0,0
+</data>
+ </layer>
+</map>

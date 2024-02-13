@@ -79,6 +79,22 @@ pub enum LayerKind {
     GroupLayer(GroupLayer),
 }
 
+impl LayerKind {
+    pub fn as_tile_layer(&self) -> Option<&TileLayer> {
+        match self {
+            LayerKind::TileLayer(tile_layer) => Some(&tile_layer),
+            LayerKind::GroupLayer(_) => None,
+        }
+    }
+
+    pub fn as_group_layer(&self) -> Option<&GroupLayer> {
+        match self {
+            LayerKind::TileLayer(_) => None,
+            LayerKind::GroupLayer(group_layer) => Some(&group_layer),
+        }
+    }
+}
+
 /// A layer of tiles.
 /// Note that mutating fields may result in panics when using helper methods.
 /// Beware.
@@ -249,6 +265,8 @@ fn parse_finite_layer_data(layer: &mut TileLayer, data_node: Node, ctx: &ParseCo
     let tile_gids = parse_tile_gids(tile_gids, encoding, compression)?;
     let tile_gids = tile_gids.into_iter().map(|gid_int| Gid::resolve(gid_int, ctx.tilesets)).collect();
     layer.tile_gids = tile_gids;
+    layer.calc_width = layer.width;
+    layer.calc_height = layer.height;
     Ok(())
 }
 

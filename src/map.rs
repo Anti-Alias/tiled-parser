@@ -2,6 +2,7 @@ use std::io::Read;
 use roxmltree::{Document, Node};
 use crate::{Error, Layer, Orientation, Properties, Result, Tileset};
 
+
 #[derive(Default, Debug)]
 pub struct TiledMap {
     version: String,
@@ -11,7 +12,7 @@ pub struct TiledMap {
     height: u32,
     tile_width: u32,
     tile_height: u32,
-    tilesets: Vec<TilesetEntry>,
+    tileset_entries: Vec<TilesetEntry>,
     infinite: bool,
     layers: Vec<Layer>,
     properties: Properties,
@@ -25,7 +26,7 @@ impl TiledMap {
     pub fn height(&self) -> u32 { self.height }
     pub fn tile_width(&self) -> u32 { self.tile_width }
     pub fn tile_height(&self) -> u32 { self.tile_height }
-    pub fn tilesets(&self) -> &[TilesetEntry] { &self.tilesets }
+    pub fn tileset_entries(&self) -> &[TilesetEntry] { &self.tileset_entries }
     pub fn infinite(&self) -> bool { self.infinite }
     pub fn layers(&self) -> &[Layer] { &self.layers }
     pub fn properties(&self) -> &Properties{ &self.properties }
@@ -77,17 +78,17 @@ impl TiledMap {
         // Children
         for node in map_node.children() {
             match node.tag_name().name() {
-                "tileset" => self.tilesets.push(TilesetEntry::parse(node)?),
+                "tileset" => self.tileset_entries.push(TilesetEntry::parse(node)?),
                 "properties" => self.properties = Properties::parse(node)?,
                 // Note: According to spec, <tileset> elements always appear before <layer>, and <group> elements,
                 // So the tilesets passed in are already complete.
                 "layer" => {
-                    let ctx = ParseContext { tilesets: &self.tilesets, infinite: self.infinite };
+                    let ctx = ParseContext { tilesets: &self.tileset_entries, infinite: self.infinite };
                     let layer = Layer::parse_tile_layer(node, &ctx)?;
                     self.layers.push(layer);
                 },
                 "group" => {
-                    let ctx = ParseContext { tilesets: &self.tilesets, infinite: self.infinite };
+                    let ctx = ParseContext { tilesets: &self.tileset_entries, infinite: self.infinite };
                     let layer = Layer::parse_group_layer(node, &ctx)?;
                     self.layers.push(layer)
                 },
@@ -108,6 +109,7 @@ pub struct TilesetEntry {
 }
 
 impl TilesetEntry {
+
     pub fn first_gid(&self) -> u32 { self.first_gid }
     pub fn kind(&self) -> &TilesetEntryKind { &self.kind }
 
@@ -184,7 +186,7 @@ impl RenderOrder {
 
 #[cfg(test)]
 mod test {
-    use crate::TiledMap;
+    use crate::{Flip, Gid, TiledMap};
 
     #[test]
     fn test_finite() {
@@ -198,5 +200,55 @@ mod test {
         let xml = include_str!("test_data/infinite.tmx");
         let map = TiledMap::parse_str(xml).unwrap();
         println!("{map:#?}");
+    }
+
+    #[test]
+    fn test_flip() {
+        let xml = include_str!("test_data/flip.tmx");
+        let map = TiledMap::parse_str(xml).unwrap();
+        let layer = &map.layers()[0];
+        let tile_layer = layer.kind().as_tile_layer().unwrap();
+        
+        let gid = tile_layer.get_gid(0, 0);
+        let gid_rot_90 = tile_layer.get_gid(1, 0);
+        let gid_rot_180 = tile_layer.get_gid(2, 0);
+        let gid_rot_270 = tile_layer.get_gid(3, 0);
+        let gid_other_tileset = tile_layer.get_gid(2, 1);
+
+        let expected = Gid::Value {
+            tileset_index: 0,
+            tile_id: 0,
+            flip: Flip(0b0000_0000),
+        };
+        assert_eq!(expected, gid);
+
+        let expected = Gid::Value {
+            tileset_index: 0,
+            tile_id: 0,
+            flip: Flip(0b0000_1010),
+        };
+        assert_eq!(expected, gid_rot_90);
+
+        
+        let expected = Gid::Value {
+            tileset_index: 0,
+            tile_id: 0,
+            flip: Flip(0b0000_1100),
+        };
+        assert_eq!(expected, gid_rot_180);
+
+        let expected = Gid::Value {
+            tileset_index: 0,
+            tile_id: 0,
+            flip: Flip(0b0000_0110),
+        };
+        assert_eq!(expected, gid_rot_270);
+
+        let expected = Gid::Value {
+            tileset_index: 0,
+            tile_id: 1,
+            flip: Flip(0b0000_0000),
+        };
+        assert_eq!(expected, gid_other_tileset);
     }
 }
