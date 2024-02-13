@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.1" orientation="orthogonal" renderorder="right-down" width="10" height="10" tilewidth="20" tileheight="20" infinite="0" nextlayerid="7" nextobjectid="1">
+<map version="1.10" tiledversion="1.10.1" orientation="orthogonal" renderorder="right-down" width="10" height="10" tilewidth="20" tileheight="20" infinite="0" nextlayerid="8" nextobjectid="7">
  <tileset firstgid="1" source="tilesets/vikings_of_midgard.tsx"/>
  <tileset firstgid="161" source="tilesets/shape.tsx"/>
  <tileset firstgid="1185" name="vikings_of_midgard_alt" tilewidth="20" tileheight="20" tilecount="160" columns="16" tilerendersize="grid" fillmode="preserve-aspect-fit">
@@ -75,4 +75,29 @@
 324,0,0,0,0,0,0,0,0,324
 </data>
  </layer>
+ <objectgroup color="#00eaff" id="7" name="objects">
+  <object id="2" x="4" y="-76.3333" width="30.6667" height="25.3333" rotation="20">
+   <properties>
+    <property name="name" value="get_rect"/>
+   </properties>
+  </object>
+  <object id="3" x="67.3333" y="-48.6667">
+   <properties>
+    <property name="name" value="what's_your_point"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="5" x="92.3333" y="-62.6667" width="13.3333" height="41" rotation="10">
+   <properties>
+    <property name="name" value="sphere"/>
+   </properties>
+   <ellipse/>
+  </object>
+  <object id="6" x="142.667" y="-71" rotation="30">
+   <properties>
+    <property name="name" value="porygon"/>
+   </properties>
+   <polyline points="0,0 26.6667,24 44.3333,1.66667 62,16.6667 61.6667,16.3333"/>
+  </object>
+ </objectgroup>
 </map>

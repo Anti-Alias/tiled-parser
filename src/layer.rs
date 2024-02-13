@@ -1,9 +1,8 @@
 use std::io::Read;
-use std::ops::Deref;
 use base64::prelude::*;
 use roxmltree::Node;
 use flate2::read::{GzDecoder, ZlibDecoder};
-use crate::{Color, Error, Gid, Image, ParseContext, Properties, Result};
+use crate::{Color, Error, Gid, Image, ObjectGroupLayer, ParseContext, Properties, Result};
 
 
 /// A layer in a [`TiledMap`](crate::map::TiledMap).
@@ -88,6 +87,12 @@ impl Layer {
         let kind = LayerKind::ImageLayer(ImageLayer::parse(image_layer_node)?);
         Ok(Self::new(fields, kind))
     }
+
+    pub(crate) fn parse_object_group_layer(object_group_layer_node: Node) -> Result<Self> {
+        let fields = CommonLayerFields::parse(object_group_layer_node)?;
+        let kind = LayerKind::ObjectGroupLayer(ObjectGroupLayer::parse(object_group_layer_node)?);
+        Ok(Self::new(fields, kind))
+    }
 }
 
 /// The specific layer kind of a [`Layer`].
@@ -96,6 +101,7 @@ pub enum LayerKind {
     TileLayer(TileLayer),
     GroupLayer(GroupLayer),
     ImageLayer(ImageLayer),
+    ObjectGroupLayer(ObjectGroupLayer),
 }
 
 impl LayerKind {
@@ -483,27 +489,30 @@ fn parse_infinite_layer_data(layer: &mut TileLayer, data_node: Node, ctx: &Parse
 
 fn parse_tile_gids(layer_data: &str, encoding: Option<&str>, compression: Option<&str>) -> Result<Vec<u32>> {
     match (encoding, compression) {
-        (Some("csv"), None) => parse_csv(layer_data),
+        (Some("csv"), None) => {
+            let parsed = parse_csv(layer_data)?;
+            Ok(parsed)
+        },
         (Some("base64"), None) => {
             let decoded = decode_base64(layer_data.as_bytes())?;
-            let parsed = parse_bytes(decoded.deref())?;
+            let parsed = parse_bytes(decoded.as_slice())?;
             Ok(parsed)
         },
         (Some("base64"), Some("gzip")) => {
             let decoded = decode_base64(layer_data.as_bytes()).map_err(|_| Error::DecodeLayerError)?;
-            let decompressed = GzDecoder::new(decoded.deref());
+            let decompressed = GzDecoder::new(decoded.as_slice());
             let parsed = parse_bytes(decompressed)?;
             Ok(parsed)
         },
         (Some("base64"), Some("zlib")) => {
             let decoded = decode_base64(layer_data.as_bytes()).map_err(|_| Error::DecodeLayerError)?;
-            let decompressed = ZlibDecoder::new(decoded.deref());
+            let decompressed = ZlibDecoder::new(decoded.as_slice());
             let parsed = parse_bytes(decompressed)?;
             Ok(parsed)
         },
         (Some("base64"), Some("zstd")) => {
             let decoded = decode_base64(layer_data.as_bytes())?;
-            let decompressed = zstd::stream::Decoder::new(decoded.deref()).map_err(|_| Error::DecodeLayerError)?;
+            let decompressed = zstd::stream::Decoder::new(decoded.as_slice()).map_err(|_| Error::DecodeLayerError)?;
             let parsed = parse_bytes(decompressed)?;
             Ok(parsed)
         },

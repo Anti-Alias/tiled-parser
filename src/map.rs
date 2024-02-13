@@ -96,6 +96,10 @@ impl TiledMap {
                     let layer = Layer::parse_image_layer(node)?;
                     self.layers.push(layer);
                 },
+                "objectgroup" => {
+                    let layer = Layer::parse_object_group_layer(node)?;
+                    self.layers.push(layer);
+                },
                 _ => {},
             }
         }
