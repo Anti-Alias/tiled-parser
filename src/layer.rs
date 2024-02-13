@@ -3,7 +3,7 @@ use std::ops::Deref;
 use base64::prelude::*;
 use roxmltree::Node;
 use flate2::read::{GzDecoder, ZlibDecoder};
-use crate::{Color, Error, Gid, Image, ParseContext, Properties, Result};
+use crate::{Color, Error, Gid, Image, Properties, Result};
 
 
 /// A layer in a [`TiledMap`](crate::map::TiledMap).
@@ -71,15 +71,15 @@ impl Layer {
         self.kind.as_image_layer()
     }
 
-    pub(crate) fn parse_tile_layer(tile_layer_node: Node, ctx: &ParseContext) -> Result<Self> {
+    pub(crate) fn parse_tile_layer(tile_layer_node: Node, infinite: bool) -> Result<Self> {
         let fields = CommonLayerFields::parse(tile_layer_node)?;
-        let kind = LayerKind::TileLayer(TileLayer::parse(tile_layer_node, ctx)?);
+        let kind = LayerKind::TileLayer(TileLayer::parse(tile_layer_node, infinite)?);
         Ok(Self::new(fields, kind))
     }
 
-    pub(crate) fn parse_group_layer(group_node: Node, ctx: &ParseContext) -> Result<Self> {
+    pub(crate) fn parse_group_layer(group_node: Node, infinite: bool) -> Result<Self> {
         let fields = CommonLayerFields::parse(group_node)?;
-        let kind = LayerKind::GroupLayer(GroupLayer::parse(group_node, ctx)?);
+        let kind = LayerKind::GroupLayer(GroupLayer::parse(group_node, infinite)?);
         Ok(Self::new(fields, kind))
     }
 
@@ -176,7 +176,7 @@ impl TileLayer {
         }
     }
 
-    pub(crate) fn parse(layer_node: Node, ctx: &ParseContext) -> Result<Self> {
+    pub(crate) fn parse(layer_node: Node, infinite: bool) -> Result<Self> {
         let mut result = Self::default();
         for attr in layer_node.attributes() {
             match attr.name() {
@@ -186,9 +186,9 @@ impl TileLayer {
             }
         }
         let data_node = layer_node.first_element_child().ok_or(Error::InvalidLayerError)?;
-        match ctx.infinite {
-            true => parse_infinite_layer_data(&mut result, data_node, ctx)?,
-            false => parse_finite_layer_data(&mut result, data_node, ctx)?,
+        match infinite {
+            true => parse_infinite_layer_data(&mut result, data_node)?,
+            false => parse_finite_layer_data(&mut result, data_node)?,
         };
         Ok(result)
     }
@@ -238,7 +238,7 @@ impl<'a> Iterator for NonNullGids<'a> {
     type Item = (i32, i32, Gid);
     fn next(&mut self) -> Option<Self::Item> {
         while let Some((x, y, gid)) = self.0.next() {
-            if gid != Gid::Null {
+            if gid != Gid::NULL {
                 return Some((x, y, gid));
             }
         }
@@ -260,17 +260,19 @@ pub struct TileLayerRegion {
 #[derive(Default, Debug)]
 pub struct GroupLayer(Vec<Layer>);
 impl GroupLayer {
+
     pub fn layers(&self) -> &[Layer] { &self.0 }
-    pub(crate) fn parse(group_node: Node, ctx: &ParseContext) -> Result<Self> {
+
+    pub(crate) fn parse(group_node: Node, infinite: bool) -> Result<Self> {
         let mut result = Self::default();
         for node in group_node.children() {
             match node.tag_name().name() {
                 "layer" => {
-                    let layer = Layer::parse_tile_layer(node, &ctx)?;
+                    let layer = Layer::parse_tile_layer(node, infinite)?;
                     result.0.push(layer);
                 },
                 "group" => {
-                    let layer = Layer::parse_group_layer(node, &ctx)?;
+                    let layer = Layer::parse_group_layer(node, infinite)?;
                     result.0.push(layer)
                 },
                 _ => {}
@@ -393,12 +395,12 @@ fn parse_bool(value: &str) -> Result<bool> {
 }
 
 /// Parses tiles in a finite layer's data node.
-fn parse_finite_layer_data(layer: &mut TileLayer, data_node: Node, ctx: &ParseContext) -> Result<()> {
+fn parse_finite_layer_data(layer: &mut TileLayer, data_node: Node) -> Result<()> {
     let encoding = data_node.attribute("encoding");
     let compression = data_node.attribute("compression");
     let tile_gids = data_node.text().ok_or(Error::InvalidLayerError)?.trim();
     let tile_gids = parse_tile_gids(tile_gids, encoding, compression)?;
-    let tile_gids = tile_gids.into_iter().map(|gid_int| Gid::resolve(gid_int, ctx.tilesets)).collect();
+    let tile_gids = tile_gids.into_iter().map(|gid_int| Gid(gid_int)).collect();
     layer.tile_gids = tile_gids;
     layer.region.width = layer.width;
     layer.region.height = layer.height;
@@ -406,7 +408,7 @@ fn parse_finite_layer_data(layer: &mut TileLayer, data_node: Node, ctx: &ParseCo
 }
 
 /// Parses tiles in an infinite layer's data node.
-fn parse_infinite_layer_data(layer: &mut TileLayer, data_node: Node, ctx: &ParseContext) -> Result<()> {
+fn parse_infinite_layer_data(layer: &mut TileLayer, data_node: Node) -> Result<()> {
     let encoding = data_node.attribute("encoding");
     let compression = data_node.attribute("compression");
 
@@ -443,14 +445,14 @@ fn parse_infinite_layer_data(layer: &mut TileLayer, data_node: Node, ctx: &Parse
             .text()
             .ok_or(Error::InvalidLayerError)?.trim();
         let tile_gids = parse_tile_gids(tile_gids, encoding, compression)?;
-        let tile_gids: Vec<Gid> = tile_gids.into_iter().map(|gid_int| Gid::resolve(gid_int, ctx.tilesets)).collect();
+        let tile_gids: Vec<Gid> = tile_gids.into_iter().map(|gid_int| Gid(gid_int)).collect();
         chunks.push(Chunk { min_x: x, min_y: y, max_x, max_y, tile_gids });
     }
 
     // Allocates vec to fit tile gids in all chunks.
     let raw_width = (global_max_x - global_min_x) as u32;
     let raw_height = (global_max_y - global_min_y) as u32;
-    let mut raw_tile_gids = vec![Gid::Null; (raw_width * raw_height) as usize];
+    let mut raw_tile_gids = vec![Gid::NULL; (raw_width * raw_height) as usize];
 
     // Composites chunks to vec.
     for chunk in chunks {
