@@ -2,7 +2,7 @@ use std::collections::hash_map::Iter as HashMapIter;
 use std::collections::HashMap;
 use std::io::Read;
 use roxmltree::{Document, Node};
-use crate::{FillMode, Grid, ObjectAlignment, Result, Tile, TileData, TileOffset, TileRenderSize};
+use crate::{FillMode, Grid, Image, ObjectAlignment, Result, Tile, TileData, TileOffset, TileRenderSize};
 
 
 #[derive(Clone, Default, Debug)]
@@ -135,40 +135,6 @@ fn parse_image(tileset_node: Node) -> Result<Option<Image>> {
         }
     }
     Ok(None)
-}
-
-#[derive(Clone, Eq, PartialEq, Default, Debug)]
-pub struct Image {
-    format: String,
-    source: String,
-    trans: Option<String>,
-    width: Option<u32>,
-    height: Option<u32>,
-}
-
-impl Image {
-    pub fn format(&self) -> &str { &self.format }
-    pub fn source(&self) -> &str { &self.source }
-    pub fn trans(&self) -> Option<&str> { self.trans.as_deref() }
-    pub fn width(&self) -> Option<u32> { self.width }
-    pub fn height(&self) -> Option<u32> { self.height }
-
-    pub fn parse(image_node: Node) -> Result<Image> {
-        let mut image = Image::default();
-        for attribute in image_node.attributes() {
-            let name = attribute.name();
-            let value = attribute.value();
-            match name {
-                "format" => image.format = value.into(),
-                "source" => image.source = value.into(),
-                "trans" => image.trans = Some(value.into()),
-                "width" => image.width = Some(value.parse()?),
-                "height" => image.height = Some(value.parse()?),
-                _ => {}
-            }
-        }
-        Ok(image)
-    }
 }
 
 /// Iterator over tiles in a tileset.

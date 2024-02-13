@@ -90,7 +90,11 @@ impl TiledMap {
                 "group" => {
                     let ctx = ParseContext { tilesets: &self.tileset_entries, infinite: self.infinite };
                     let layer = Layer::parse_group_layer(node, &ctx)?;
-                    self.layers.push(layer)
+                    self.layers.push(layer);
+                },
+                "imagelayer" => {
+                    let layer = Layer::parse_image_layer(node)?;
+                    self.layers.push(layer);
                 },
                 _ => {},
             }
@@ -194,7 +198,10 @@ mod test {
         // Loads map and gets first layer
         let xml = include_str!("test_data/finite.tmx");
         let map = TiledMap::parse_str(xml).unwrap();
-        let layer = &map.layers()[0];
+        let layer = map.layers()
+            .iter()
+            .find(|layer| layer.name() == "below")
+            .unwrap();
         let tile_layer = layer.as_tile_layer().unwrap();
 
         // Checks the contents of those tiles
@@ -213,7 +220,6 @@ mod test {
             flip: Flip(0b0000_0000),
         };
         assert_eq!(expected, tile_b_gid);
-
     }
 
     #[test]
@@ -222,7 +228,10 @@ mod test {
         // Loads map and gets first layer
         let xml = include_str!("test_data/infinite.tmx");
         let map = TiledMap::parse_str(xml).unwrap();
-        let layer = &map.layers()[0];
+        let layer = map.layers()
+            .iter()
+            .find(|layer| layer.name() == "below")
+            .unwrap();
         let tile_layer = layer.as_tile_layer().unwrap();
 
         // Checks the contents of those tiles
@@ -244,12 +253,15 @@ mod test {
     }
 
     #[test]
-    fn test_infinite_iter() {
+    fn test_iter() {
 
         // Loads map and gets first layer
         let xml = include_str!("test_data/infinite.tmx");
         let map = TiledMap::parse_str(xml).unwrap();
-        let layer = &map.layers()[0];
+        let layer = map.layers()
+            .iter()
+            .find(|layer| layer.name() == "below")
+            .unwrap();
         let tile_layer = layer.as_tile_layer().unwrap();
 
         // Iterates over all non-null tile gids
@@ -274,6 +286,21 @@ mod test {
             flip: Flip(0b0000_1000),
         };
         assert_eq!(Some((expected_x, expected_y, expected_gid)), gids.next());
+    }
+
+    #[test]
+    fn test_image() {
+
+        // Loads map and gets first layer
+        let xml = include_str!("test_data/infinite.tmx");
+        let map = TiledMap::parse_str(xml).unwrap();
+        let layer = map.layers()
+            .iter()
+            .find(|layer| layer.name() == "background")
+            .unwrap();
+
+        // Checks the contents of those tiles
+        println!("{layer:#?}");
     }
 
     #[test]

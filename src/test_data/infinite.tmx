@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.1" orientation="orthogonal" renderorder="right-down" width="10" height="10" tilewidth="20" tileheight="20" infinite="1" nextlayerid="7" nextobjectid="1">
+<map version="1.10" tiledversion="1.10.1" orientation="orthogonal" renderorder="right-down" width="10" height="10" tilewidth="20" tileheight="20" infinite="1" nextlayerid="8" nextobjectid="1">
  <tileset firstgid="1" source="tilesets/vikings_of_midgard.tsx"/>
  <tileset firstgid="161" source="tilesets/shape.tsx"/>
  <tileset firstgid="1185" name="vikings_of_midgard_alt" tilewidth="20" tileheight="20" tilecount="160" columns="16" tilerendersize="grid" fillmode="preserve-aspect-fit">
@@ -17,6 +17,12 @@
    </properties>
   </tile>
  </tileset>
+ <imagelayer id="7" name="background" locked="1" opacity="0.75" offsetx="-134" offsety="-145.333" parallaxx="0.5" parallaxy="0.5" repeatx="1" repeaty="1">
+  <image source="images/pepe.png" width="400" height="400"/>
+  <properties>
+   <property name="precious_boy" type="bool" value="true"/>
+  </properties>
+ </imagelayer>
  <layer id="1" name="below" width="10" height="10">
   <data encoding="csv">
    <chunk x="-16" y="-16" width="16" height="16">
@@ -125,5 +131,4 @@
 </chunk>
   </data>
  </layer>
- <group id="6" name="finite_group"/>
 </map>

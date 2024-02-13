@@ -14,7 +14,6 @@ impl<'a> Tile<'a> {
         Self { id, tileset, data }
     }
     pub fn id(&self) -> u32 { self.id }
-
     pub fn typ(&self) -> &str { &self.data.typ }
     pub fn properties(&self) -> &Properties { &self.data.properties }
     pub fn image(&self) -> Option<&Image> { self.data.image.as_ref() }

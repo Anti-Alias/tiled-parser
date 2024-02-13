@@ -3,7 +3,7 @@ use std::ops::Deref;
 use base64::prelude::*;
 use roxmltree::Node;
 use flate2::read::{GzDecoder, ZlibDecoder};
-use crate::{Color, Error, Gid, ParseContext, Properties, Result};
+use crate::{Color, Error, Gid, Image, ParseContext, Properties, Result};
 
 
 /// A layer in a [`TiledMap`](crate::map::TiledMap).
@@ -67,6 +67,10 @@ impl Layer {
         self.kind.as_group_layer()
     }
 
+    pub fn as_image_layer(&self) -> Option<&ImageLayer> {
+        self.kind.as_image_layer()
+    }
+
     pub(crate) fn parse_tile_layer(tile_layer_node: Node, ctx: &ParseContext) -> Result<Self> {
         let fields = CommonLayerFields::parse(tile_layer_node)?;
         let kind = LayerKind::TileLayer(TileLayer::parse(tile_layer_node, ctx)?);
@@ -78,6 +82,12 @@ impl Layer {
         let kind = LayerKind::GroupLayer(GroupLayer::parse(group_node, ctx)?);
         Ok(Self::new(fields, kind))
     }
+
+    pub(crate) fn parse_image_layer(image_layer_node: Node) -> Result<Self> {
+        let fields = CommonLayerFields::parse(image_layer_node)?;
+        let kind = LayerKind::ImageLayer(ImageLayer::parse(image_layer_node)?);
+        Ok(Self::new(fields, kind))
+    }
 }
 
 /// The specific layer kind of a [`Layer`].
@@ -85,20 +95,28 @@ impl Layer {
 pub enum LayerKind {
     TileLayer(TileLayer),
     GroupLayer(GroupLayer),
+    ImageLayer(ImageLayer),
 }
 
 impl LayerKind {
     pub fn as_tile_layer(&self) -> Option<&TileLayer> {
         match self {
-            LayerKind::TileLayer(tile_layer) => Some(&tile_layer),
-            LayerKind::GroupLayer(_) => None,
+            LayerKind::TileLayer(tile_layer) => Some(tile_layer),
+            _ => None,
         }
     }
 
     pub fn as_group_layer(&self) -> Option<&GroupLayer> {
         match self {
-            LayerKind::TileLayer(_) => None,
-            LayerKind::GroupLayer(group_layer) => Some(&group_layer),
+            LayerKind::GroupLayer(group_layer) => Some(group_layer),
+            _ => None,
+        }
+    }
+
+    pub fn as_image_layer(&self) -> Option<&ImageLayer> {
+        match self {
+            LayerKind::ImageLayer(image_layer) => Some(image_layer),
+            _ => None,
         }
     }
 }
@@ -242,9 +260,7 @@ pub struct TileLayerRegion {
 #[derive(Default, Debug)]
 pub struct GroupLayer(Vec<Layer>);
 impl GroupLayer {
-
     pub fn layers(&self) -> &[Layer] { &self.0 }
-
     pub(crate) fn parse(group_node: Node, ctx: &ParseContext) -> Result<Self> {
         let mut result = Self::default();
         for node in group_node.children() {
@@ -257,6 +273,38 @@ impl GroupLayer {
                     let layer = Layer::parse_group_layer(node, &ctx)?;
                     result.0.push(layer)
                 },
+                _ => {}
+            }
+        }
+        Ok(result)
+    }
+}
+
+/// A layer containing a single image.
+#[derive(Default, Debug)]
+pub struct ImageLayer {
+    repeat_x: bool,
+    repeat_y: bool,
+    image: Image,
+}
+
+impl ImageLayer {
+    pub fn repeat_x(&self) -> bool { self.repeat_x }
+    pub fn repeat_y(&self) -> bool { self.repeat_y }
+    pub fn image(&self) -> &Image { &self.image }
+
+    fn parse(image_layer_node: Node) -> Result<Self> {
+        let mut result = Self::default();
+        for attr in image_layer_node.attributes() {
+            match attr.name() {
+                "repeatx" => result.repeat_x = parse_bool(attr.value())?,
+                "repeaty" => result.repeat_y = parse_bool(attr.value())?,
+                _ => {}
+            }
+        }
+        for child in image_layer_node.children() {
+            match child.tag_name().name() {
+                "image" => result.image = Image::parse(child)?,
                 _ => {}
             }
         }
