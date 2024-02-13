@@ -242,4 +242,16 @@ mod test {
         assert_eq!(true, tileset.tile_at(1, 0).is_none());
         assert_eq!(true, tileset.tile_at(2, 2).is_none());
     }
+
+    #[test]
+    fn test_tileset_animation() {
+        let xml = include_str!("test_data/tilesets/vikings_of_midgard.tsx");
+        let tileset = Tileset::parse_str(xml).unwrap();
+
+        let tile = tileset.tile(144).unwrap();
+        assert!(tile.animation().is_some());
+
+        let tile = tileset.tile(145).unwrap();
+        assert!(tile.animation().is_none());
+    }
 }

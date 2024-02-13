@@ -22,6 +22,7 @@ impl<'a> Tile<'a> {
     pub fn y(&self) -> Option<u32> { self.data.y }
     pub fn width(&self) -> Option<u32> { self.data.width }
     pub fn height(&self) -> Option<u32> { self.data.height }
+    pub fn animation(&self) -> Option<&'a Animation> { self.data.animation.as_ref() }
     pub fn tileset(&self) -> &'a Tileset { self.tileset }
 
     /// Region of an image this tile belongs to.
@@ -46,6 +47,7 @@ pub(crate) struct TileData {
     typ: String,
     properties: Properties,
     image: Option<Image>,
+    animation: Option<Animation>,
     x: Option<u32>,
     y: Option<u32>,
     width: Option<u32>,
@@ -74,6 +76,7 @@ impl TileData {
             match child.tag_name().name() {
                 "properties" => result.properties = Properties::parse(child)?,
                 "image" => result.image = Some(Image::parse(child)?),
+                "animation" => result.animation = Some(Animation::parse(child)?),
                 _ => {}
             }
         }
@@ -82,8 +85,7 @@ impl TileData {
     }
 }
 
-/// The region of an image a tile resides in.
-/// Values are stored in pixels.
+/// The region (in pixels) of an image a tile resides in.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
 pub struct TilesetRegion {
     pub x: u32,
@@ -152,6 +154,36 @@ impl Flip {
     pub fn is_rotated_hex_120(self) -> bool {
         self.0 & Self::ROTATED_HEXAGONAL_120_FLAG != 0
     }
+}
+
+/// Animation frames of a [`Tile`].
+#[derive(Clone, Eq, PartialEq, Default, Debug)]
+pub struct Animation(Vec<Frame>);
+impl Animation {
+    
+    pub fn frames(&self) -> &[Frame] { &self.0 }
+
+    pub(crate) fn parse(animation_node: Node) -> Result<Self> {
+        let mut frames = Vec::new();
+        for frame_node in animation_node.children().filter(|node| node.tag_name().name() == "frame") {
+            let mut frame = Frame::default();
+            for attr in frame_node.attributes() {
+                match attr.name() {
+                    "tileid" => frame.tile_id = attr.value().parse()?,
+                    "duration" => frame.duration = attr.value().parse()?,
+                    _ => {}
+                }
+            }
+            frames.push(frame);
+        }
+        Ok(Self(frames))
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
+pub struct Frame {
+    pub tile_id: u32,
+    pub duration: u32,
 }
 
 impl std::fmt::Debug for Flip {
