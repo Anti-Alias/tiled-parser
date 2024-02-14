@@ -2,7 +2,7 @@ use std::collections::hash_map::Iter as HashMapIter;
 use std::collections::HashMap;
 use std::io::Read;
 use roxmltree::{Document, Node};
-use crate::{FillMode, Grid, Image, ObjectAlignment, Result, Tile, TileData, TileOffset, TileRenderSize};
+use crate::{Error, Image, Orientation, Result, Tile, TileData, TileOffset};
 
 
 #[derive(Clone, Default, Debug)]
@@ -149,6 +149,98 @@ impl<'a> Iterator for Tiles<'a> {
     }
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
+pub enum FillMode {
+    #[default]
+    Stretch,
+    PreserveAspectFit,
+}
+
+impl FillMode {
+    pub fn parse(value: &str) -> Result<Self> {
+        match value {
+            "stretch" => Ok(Self::Stretch),
+            "preserve-aspect-fit" => Ok(Self::PreserveAspectFit),
+            _ => Err(Error::ParsingError),
+        }
+    }
+}
+
+/// Orientation of tiles in a tileset.
+#[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
+pub struct Grid {
+    pub orientation: Orientation,
+    pub width: u32,
+    pub height: u32,
+}
+
+impl Grid {
+    pub(crate) fn parse(node: Node) -> Result<Self> {
+        let mut result = Self::default();
+        for attr in node.attributes() {
+            match attr.name() {
+                "orientation" => result.orientation = Orientation::parse(attr.value())?,
+                "width" => result.width = attr.value().parse()?,
+                "height" => result.height = attr.value().parse()?,
+                _ => {}
+            }
+        }
+        Ok(result)
+    }
+}
+
+/// Alignment for tile objects.
+#[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
+pub enum ObjectAlignment {
+    #[default]
+    Unspecified,
+    TopLeft,
+    Top,
+    TopRight,
+    Left,
+    Center,
+    Right,
+    BottomLeft,
+    Bottom,
+    BottomRight,
+}
+
+impl ObjectAlignment {
+    pub fn parse(value: &str) -> Result<Self> {
+        match value {
+            "unspecified" => Ok(Self::Unspecified),
+            "topleft" => Ok(Self::TopLeft),
+            "top" => Ok(Self::Top),
+            "topright" => Ok(Self::TopRight),
+            "left" => Ok(Self::Left),
+            "center" => Ok(Self::Center),
+            "right" => Ok(Self::Right),
+            "bottomleft" => Ok(Self::BottomLeft),
+            "bottom" => Ok(Self::Bottom),
+            "bottomright" => Ok(Self::BottomRight),
+            _ => Err(Error::ParsingError),
+        }
+    }
+}
+
+/// The size to use when rendering tiles from this tileset on a tile layer.
+/// Valid values are tile (the default) and grid. When set to grid, the tile is drawn at the tile grid size of the map.
+#[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
+pub enum TileRenderSize {
+    #[default]
+    Tile,
+    Grid,
+}
+
+impl TileRenderSize {
+    pub fn parse(value: &str) -> Result<Self> {
+        match value {
+            "tile" => Ok(Self::Tile),
+            "grid" => Ok(Self::Grid),
+            _ => Err(Error::ParsingError),
+        }
+    }
+}
 
 #[cfg(test)]
 mod test {

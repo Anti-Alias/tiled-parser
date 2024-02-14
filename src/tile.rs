@@ -155,6 +155,7 @@ impl Animation {
     }
 }
 
+/// A frame in a tile [`Animation`].
 #[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
 pub struct Frame {
     pub tile_id: u32,
