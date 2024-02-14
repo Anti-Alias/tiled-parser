@@ -1,31 +1,71 @@
 use std::io::Read;
+use std::str::FromStr;
 use roxmltree::{Document, Node};
-use crate::{Error, Layer, Orientation, Properties, Result, Tileset};
+use crate::{Color, Error, Layer, Orientation, Properties, Result, Tileset};
 
 
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct TiledMap {
     version: String,
+    class: String,
     orientation: Orientation,
     render_order: RenderOrder,
     width: u32, 
     height: u32,
     tile_width: u32,
     tile_height: u32,
+    hex_side_length: Option<i32>,
+    stagger_axis: Option<StaggerAxis>,
+    stagger_index: Option<StaggerIndex>,
+    parallax_origin_x: f32,
+    parallax_origin_y: f32,
+    background_color: Color,
     tileset_entries: Vec<TilesetEntry>,
     infinite: bool,
     layers: Vec<Layer>,
     properties: Properties,
 }
 
+impl Default for TiledMap {
+    fn default() -> Self {
+        Self {
+            version: Default::default(),
+            class: Default::default(),
+            orientation: Default::default(),
+            render_order: Default::default(),
+            width: Default::default(),
+            height: Default::default(),
+            tile_width: Default::default(),
+            tile_height: Default::default(),
+            hex_side_length: Default::default(),
+            stagger_axis: Default::default(),
+            stagger_index: Default::default(),
+            parallax_origin_x: Default::default(),
+            parallax_origin_y: Default::default(),
+            background_color: Color::TRANSPARENT,
+            tileset_entries: Default::default(),
+            infinite: Default::default(),
+            layers: Default::default(),
+            properties: Default::default(),
+        }
+    }
+}
+
 impl TiledMap {
     pub fn version(&self) -> &str { &self.version }
+    pub fn class(&self) -> &str { &self.class }
     pub fn orientation(&self) -> Orientation { self.orientation }
     pub fn render_order(&self) -> RenderOrder { self.render_order }
     pub fn width(&self) -> u32 { self.width }
     pub fn height(&self) -> u32 { self.height }
     pub fn tile_width(&self) -> u32 { self.tile_width }
     pub fn tile_height(&self) -> u32 { self.tile_height }
+    pub fn hex_side_length(&self) -> Option<i32> { self.hex_side_length }
+    pub fn stagger_axis(&self) -> Option<StaggerAxis> { self.stagger_axis }
+    pub fn stagger_index(&self) -> Option<StaggerIndex> { self.stagger_index }
+    pub fn parallax_origin_x(&self) -> f32 { self.parallax_origin_x }
+    pub fn parallax_origin_y(&self) -> f32 { self.parallax_origin_y }
+    pub fn background_color(&self) -> Color { self.background_color }
     pub fn tileset_entries(&self) -> &[TilesetEntry] { &self.tileset_entries }
     pub fn infinite(&self) -> bool { self.infinite }
     pub fn layers(&self) -> &[Layer] { &self.layers }
@@ -60,12 +100,19 @@ impl TiledMap {
             let value = attribute.value();
             match name {
                 "version" => self.version = String::from(value),
+                "class" => self.class = String::from(value),
                 "orientation" => self.orientation = Orientation::parse(value)?,
                 "renderorder" => self.render_order = RenderOrder::from_str(value)?,
                 "width" => self.width = value.parse()?,
                 "height" => self.height = value.parse()?,
                 "tilewidth" => self.tile_width = value.parse()?,
                 "tileheight" => self.tile_height = value.parse()?,
+                "hexsidelength" => self.hex_side_length = Some(value.parse()?),
+                "staggeraxis" => self.stagger_axis = Some(value.parse()?),
+                "staggerindex" => self.stagger_index = Some(value.parse()?),
+                "parallaxoriginx" => self.parallax_origin_x = value.parse()?,
+                "parallaxoriginy" => self.parallax_origin_y = value.parse()?,
+                "backgroundcolor" => self.background_color = value.parse()?,
                 "infinite" => self.infinite = match value {
                     "0" => false,
                     "1" => true,
@@ -178,6 +225,45 @@ impl RenderOrder {
             "left-down" => Ok(Self::LeftDown),
             "left-up" => Ok(Self::LeftUp),
             _ => Err(Error::ParsingError)
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
+pub enum StaggerAxis {
+    X,
+    #[default]
+    Y,
+    LeftDown,
+    LeftUp,
+}
+
+impl FromStr for StaggerAxis {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "x" => Ok(Self::X),
+            "y" => Ok(Self::Y),
+            _ => Err(Error::ParsingError),
+        }
+    }
+}
+
+
+#[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
+pub enum StaggerIndex {
+    Even,
+    #[default]
+    Odd,
+}
+
+impl FromStr for StaggerIndex {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "even" => Ok(Self::Even),
+            "odd" => Ok(Self::Odd),
+            _ => Err(Error::ParsingError),
         }
     }
 }

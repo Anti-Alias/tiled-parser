@@ -5,7 +5,7 @@ mod tile;
 mod image;
 mod object;
 mod properties;
-mod attributes;
+mod common;
 mod error;
 mod utils;
 
@@ -16,6 +16,6 @@ pub use tile::*;
 pub use image::*;
 pub use object::*;
 pub use properties::*;
-pub use attributes::*;
+pub use common::*;
 pub use error::*;
 pub(crate) use utils::*;

@@ -146,6 +146,7 @@ impl Color {
 
     pub const WHITE: Color = Color { r: 255, g: 255, b: 255, a: 255 };
     pub const BLACK: Color = Color { r: 0, g: 0, b: 0, a: 255 };
+    pub const TRANSPARENT: Color = Color { r: 0, g: 0, b: 0, a: 0 };
 
     fn from_argb(value: u32) -> Self {
         let a = (value >> 24) & 0xFF;
