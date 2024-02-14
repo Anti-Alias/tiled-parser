@@ -1,6 +1,7 @@
 use crate::Result;
 use roxmltree::Node;
 
+/// Image in an [`ImageLayer`](crate::ImageLayer), a [`Tileset`](crate::Tileset) or a [`Tile`](crate::Tile).
 #[derive(Clone, Eq, PartialEq, Default, Debug)]
 pub struct Image {
     format: String,
@@ -17,7 +18,7 @@ impl Image {
     pub fn width(&self) -> Option<u32> { self.width }
     pub fn height(&self) -> Option<u32> { self.height }
 
-    pub fn parse(image_node: Node) -> Result<Image> {
+    pub(crate) fn parse(image_node: Node) -> Result<Image> {
         let mut image = Image::default();
         for attribute in image_node.attributes() {
             let name = attribute.name();

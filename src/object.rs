@@ -2,7 +2,7 @@ use std::str::FromStr;
 use roxmltree::Node;
 use crate::{parse_bool, Color, Error, Gid, Properties, Result};
 
-/// A group of objects.
+/// A group of [`Object`]s.
 #[derive(Clone, Debug, Default)]
 pub struct ObjectGroupLayer {
     color: Option<Color>,
@@ -115,6 +115,7 @@ impl Object {
     }
 }
 
+/// The draw order of objects in a [`GroupLayer`](crate::GroupLayer).
 #[derive(Copy, Clone, Eq, PartialEq, Default, PartialOrd, Ord, Hash, Debug)]
 pub enum DrawOrder {
     #[default]
@@ -134,6 +135,7 @@ impl FromStr for DrawOrder {
 }
 
 
+/// A specific type of [`Object`].
 #[derive(Clone, Debug, Default)]
 pub enum ObjectKind {
     #[default]
@@ -174,6 +176,7 @@ fn parse_points(points: &str, result: &mut Vec<(f32, f32)>) -> Result<()> {
     Ok(())
 }
 
+/// A text object.
 #[derive(Clone, Debug)]
 pub struct Text {
     value: String,
@@ -253,6 +256,7 @@ impl Text {
     }
 }
 
+/// Horizontal alignment of text.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, PartialOrd, Ord, Default, Debug)]
 pub enum HAlign {
     #[default]
@@ -275,6 +279,7 @@ impl FromStr for HAlign {
     }
 }
 
+/// Vertical alignment of text.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, PartialOrd, Ord, Default, Debug)]
 pub enum VAlign {
     #[default]

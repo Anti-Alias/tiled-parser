@@ -2,6 +2,7 @@ use std::num::{ParseFloatError, ParseIntError};
 use std::str::ParseBoolError;
 use thiserror::Error;
 
+/// Any error that can occur during parsing.
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("Failed to parse tmx file")]

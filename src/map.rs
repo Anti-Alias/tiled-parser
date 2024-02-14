@@ -4,8 +4,9 @@ use roxmltree::{Document, Node};
 use crate::{Color, Error, Layer, Orientation, Properties, Result, Tileset};
 
 
+/// A TiledMap parsed from a map file.
 #[derive(Debug)]
-pub struct TiledMap {
+pub struct Map {
     version: String,
     class: String,
     orientation: Orientation,
@@ -26,7 +27,7 @@ pub struct TiledMap {
     properties: Properties,
 }
 
-impl Default for TiledMap {
+impl Default for Map {
     fn default() -> Self {
         Self {
             version: Default::default(),
@@ -51,7 +52,7 @@ impl Default for TiledMap {
     }
 }
 
-impl TiledMap {
+impl Map {
     pub fn version(&self) -> &str { &self.version }
     pub fn class(&self) -> &str { &self.class }
     pub fn orientation(&self) -> Orientation { self.orientation }
@@ -91,7 +92,7 @@ impl TiledMap {
         Ok(map)
     }
 
-    /// Parses inner map element as a [`TiledMap`].
+    /// Parses inner map element as a [`Map`].
     fn parse_node(&mut self, map_node: Node) -> Result<()> {
 
         // Attributes
@@ -153,7 +154,7 @@ impl TiledMap {
     }
 }
 
-/// A single tileset stored in a [`TiledMap`]`.
+/// A single tileset stored in a [`Map`].
 /// Either embeds the tileset, or references it in another file.
 #[derive(Clone, Debug)]
 pub struct TilesetEntry {
@@ -208,6 +209,7 @@ pub enum TilesetEntryKind {
     External(String),
 }
 
+/// The order in which tiles on tile layers are rendered.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
 pub enum RenderOrder {
     #[default]
@@ -229,6 +231,7 @@ impl RenderOrder {
     }
 }
 
+/// For staggered and hexagonal maps, determines which axis (X or Y) is staggered.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
 pub enum StaggerAxis {
     X,
@@ -249,7 +252,7 @@ impl FromStr for StaggerAxis {
     }
 }
 
-
+/// For staggered and hexagonal maps, determines whether the Even or Odd indexes along the staggered axis are shifted.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
 pub enum StaggerIndex {
     Even,
@@ -271,13 +274,13 @@ impl FromStr for StaggerIndex {
 
 #[cfg(test)]
 mod test {
-    use crate::{ Gid, TiledMap};
+    use crate::{ Gid, Map};
 
     #[test]
     fn test_finite() {
 
         let xml = include_str!("test_data/finite.tmx");
-        let map = TiledMap::parse_str(xml).unwrap();
+        let map = Map::parse_str(xml).unwrap();
         let layer = map.layers().iter().find(|layer| layer.name() == "below").unwrap();
         let tile_layer = layer.as_tile_layer().unwrap();
 
@@ -289,7 +292,7 @@ mod test {
     fn test_infinite() {
 
         let xml = include_str!("test_data/infinite.tmx");
-        let map = TiledMap::parse_str(xml).unwrap();
+        let map = Map::parse_str(xml).unwrap();
         let layer = map.layers().iter().find(|layer| layer.name() == "below").unwrap();
         let tile_layer = layer.as_tile_layer().unwrap();
 
@@ -300,26 +303,26 @@ mod test {
     #[test]
     fn test_hexagonal() {
         let xml = include_str!("test_data/hexagonal.tmx");
-        let _map = TiledMap::parse_str(xml).unwrap();
+        let _map = Map::parse_str(xml).unwrap();
     }
 
     #[test]
     fn test_isometric() {
         let xml = include_str!("test_data/isometric.tmx");
-        let _map = TiledMap::parse_str(xml).unwrap();
+        let _map = Map::parse_str(xml).unwrap();
     }
 
     #[test]
     fn test_isometric_staggered() {
         let xml = include_str!("test_data/isometric_staggered.tmx");
-        let _map = TiledMap::parse_str(xml).unwrap();
+        let _map = Map::parse_str(xml).unwrap();
     }
 
     #[test]
     fn test_iter() {
 
         let xml = include_str!("test_data/infinite.tmx");
-        let map = TiledMap::parse_str(xml).unwrap();
+        let map = Map::parse_str(xml).unwrap();
         let layer = map.layers().iter().find(|layer| layer.name() == "below").unwrap();
         let tile_layer = layer.as_tile_layer().unwrap();
         let mut gids = tile_layer.gids().non_null();
@@ -338,7 +341,7 @@ mod test {
     #[test]
     fn test_image_layer() {
         let xml = include_str!("test_data/infinite.tmx");
-        let map = TiledMap::parse_str(xml).unwrap();
+        let map = Map::parse_str(xml).unwrap();
         let layer = map.layers().iter().find(|layer| layer.name() == "background").unwrap();
         let image_layer = layer.as_image_layer().unwrap();
         assert_eq!("images/pepe.png", image_layer.image().source());
@@ -347,7 +350,7 @@ mod test {
     #[test]
     fn test_object_layer() {
         let xml = include_str!("test_data/finite.tmx");
-        let map = TiledMap::parse_str(xml).unwrap();
+        let map = Map::parse_str(xml).unwrap();
         let layer = map.layers().iter().find(|layer| layer.name() == "objects").unwrap();
         let object_layer = layer.as_object_group_layer().unwrap();
         println!("{object_layer:#?}");

@@ -5,6 +5,7 @@ use roxmltree::{Document, Node};
 use crate::{Error, Image, Orientation, Result, Tile, TileData, TileOffset};
 
 
+/// A tileset parsed from a tileset file, or a map file when embedded.
 #[derive(Clone, Default, Debug)]
 pub struct Tileset {
     name: String,
@@ -149,6 +150,7 @@ impl<'a> Iterator for Tiles<'a> {
     }
 }
 
+/// The fill mode used when rendering tiles from a tileset.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
 pub enum FillMode {
     #[default]

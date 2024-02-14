@@ -5,8 +5,7 @@ use flate2::read::{GzDecoder, ZlibDecoder};
 use crate::{parse_bool, Color, Error, Gid, Image, ObjectGroupLayer, Properties, Result};
 
 
-/// A layer in a [`TiledMap`](crate::map::TiledMap).
-/// Can be a group, tile or object layer.
+/// A layer in a [`Map`](crate::map::Map).
 #[derive(Debug)]
 pub struct Layer {
     id: u32,
@@ -99,7 +98,7 @@ impl Layer {
     }
 }
 
-/// The specific layer kind of a [`Layer`].
+/// A specific type of [`Layer`].
 #[derive(Debug)]
 pub enum LayerKind {
     TileLayer(TileLayer),
@@ -138,9 +137,7 @@ impl LayerKind {
     }
 }
 
-/// A layer of tiles.
-/// Note that mutating fields may result in panics when using helper methods.
-/// Beware.
+/// A layer of [`Gid`]s of [`Tile`](crate::Tile)s.
 #[derive(Debug, Default)]
 pub struct TileLayer {
     width: u32,
@@ -262,7 +259,7 @@ impl<'a> Iterator for NonNullGids<'a> {
     }
 }
 
-/// A rectangular region in a [`TileLayer`] that encompasses all tiles.
+/// A rectangular region in a [`TileLayer`] that encompasses its tiles.
 /// Useful for manual iteration.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
 pub struct TileLayerRegion {

@@ -3,6 +3,7 @@ use roxmltree::Node;
 use crate::{Error, Result};
 
 /// Orientation of the map.
+/// Either Orthogonal, Isometric, Staggered or Hexagonal.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
 pub enum Orientation {
     #[default]

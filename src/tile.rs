@@ -97,7 +97,7 @@ pub struct TilesetRegion {
     pub height: u32,
 }
 
-/// Global id of a tile in a [`TiledMap`](crate::TiledMap).
+/// Global id of a tile in a [`Map`](crate::Map).
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Default, Debug)]
 pub struct Gid(pub u32);
 

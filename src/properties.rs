@@ -43,6 +43,7 @@ impl Properties {
     }
 }
 
+/// The value of a property.
 #[derive(Clone, PartialEq, Debug)]
 pub enum PropertyValue {
     String(String),
