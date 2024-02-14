@@ -1,5 +1,5 @@
 use roxmltree::Node;
-use crate::{Image, Properties, Tileset, Result};
+use crate::{Image, ObjectGroupLayer, Properties, Result, Tileset};
 
 /// A tile belonging to a [`Tileset`].
 #[derive(Clone, Debug)]
@@ -22,6 +22,7 @@ impl<'a> Tile<'a> {
     pub fn width(&self) -> Option<u32> { self.data.width }
     pub fn height(&self) -> Option<u32> { self.data.height }
     pub fn animation(&self) -> Option<&'a Animation> { self.data.animation.as_ref() }
+    pub fn objects(&self) -> Option<&'a ObjectGroupLayer> { self.data.objects.as_ref() }
     pub fn tileset(&self) -> &'a Tileset { self.tileset }
 
     /// Region of an image this tile belongs to (in pixels).
@@ -52,6 +53,7 @@ pub(crate) struct TileData {
     y: Option<u32>,
     width: Option<u32>,
     height: Option<u32>,
+    objects: Option<ObjectGroupLayer>,
 }
 
 impl TileData {
@@ -77,6 +79,7 @@ impl TileData {
                 "properties" => result.properties = Properties::parse(child)?,
                 "image" => result.image = Some(Image::parse(child)?),
                 "animation" => result.animation = Some(Animation::parse(child)?),
+                "objectgroup" => result.objects = Some(ObjectGroupLayer::parse(child)?),
                 _ => {}
             }
         }

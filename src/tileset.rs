@@ -220,4 +220,14 @@ mod test {
         let tile = tileset.tile(145).unwrap();
         assert!(tile.animation().is_none());
     }
+
+    #[test]
+    fn test_tileset_objects() {
+        let xml = include_str!("test_data/tilesets/shape.tsx");
+        let tileset = Tileset::parse_str(xml).unwrap();
+        let tile = tileset.tile(72).unwrap();
+        let objects = tile.objects().unwrap();
+        assert_eq!(2, objects.objects().len());
+        assert_eq!(8.37916, objects.objects()[1].x());
+    }
 }

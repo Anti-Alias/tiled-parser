@@ -24,6 +24,14 @@
    <property name="cliff" value="n,e,w"/>
    <property name="shape" value="floor"/>
   </properties>
+  <objectgroup draworder="index" id="3">
+   <object id="2" x="6.28437" y="4.27337">
+    <point/>
+   </object>
+   <object id="3" x="8.37916" y="12.3174">
+    <ellipse/>
+   </object>
+  </objectgroup>
  </tile>
  <tile id="76">
   <properties>

@@ -70,6 +70,10 @@ impl Layer {
         self.kind.as_image_layer()
     }
 
+    pub fn as_object_group_layer(&self) -> Option<&ObjectGroupLayer> {
+        self.kind.as_object_group_layer()
+    }
+
     pub(crate) fn parse_tile_layer(tile_layer_node: Node, infinite: bool) -> Result<Self> {
         let fields = CommonLayerFields::parse(tile_layer_node)?;
         let kind = LayerKind::TileLayer(TileLayer::parse(tile_layer_node, infinite)?);
@@ -122,6 +126,13 @@ impl LayerKind {
     pub fn as_image_layer(&self) -> Option<&ImageLayer> {
         match self {
             LayerKind::ImageLayer(image_layer) => Some(image_layer),
+            _ => None,
+        }
+    }
+
+    pub fn as_object_group_layer(&self) -> Option<&ObjectGroupLayer> {
+        match self {
+            LayerKind::ObjectGroupLayer(object_group_layer) => Some(object_group_layer),
             _ => None,
         }
     }

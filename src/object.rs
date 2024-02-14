@@ -3,16 +3,16 @@ use roxmltree::Node;
 use crate::{parse_bool, Color, Error, Gid, Properties, Result};
 
 /// A group of objects.
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct ObjectGroupLayer {
-    color: Color,
+    color: Option<Color>,
     draw_order: DrawOrder,
     objects: Vec<Object>,
 }
 
 impl ObjectGroupLayer {
 
-    pub fn color(&self) -> Color { self.color }
+    pub fn color(&self) -> Option<Color> { self.color }
     pub fn draw_order(&self) -> DrawOrder { self.draw_order }
     pub fn objects(&self) -> &[Object] { &self.objects }
 
@@ -20,7 +20,7 @@ impl ObjectGroupLayer {
         let mut result = Self::default();
         for attr in object_layer_node.attributes() {
             match attr.name() {
-                "color" => result.color = attr.value().parse()?,
+                "color" => result.color = Some(attr.value().parse()?),
                 "draworder" => result.draw_order = attr.value().parse()?,
                 _ => {}
             }
@@ -36,8 +36,11 @@ impl ObjectGroupLayer {
 }
 
 /// A single object in an [`ObjectGroupLayer`]
-#[derive(Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct Object {
+    id: u32,
+    name: String,
+    typ: String,
     x: f32,
     y: f32,
     width: f32,
@@ -49,7 +52,29 @@ pub struct Object {
     kind: ObjectKind,
 }
 
+impl Default for Object {
+    fn default() -> Self {
+        Self {
+            id: 0,
+            name: "".into(),
+            typ: "".into(),
+            x: 0.0,
+            y: 0.0,
+            width: 0.0,
+            height: 0.0,
+            rotation: 0.0,
+            gid: None,
+            visible: true,
+            properties: Properties::default(),
+            kind: ObjectKind::default(),
+        }
+    }
+}
+
 impl Object {
+    pub fn id(&self) -> u32 { self.id }
+    pub fn name(&self) -> &str { &self.name }
+    pub fn typ(&self) -> &str { &self.typ }
     pub fn x(&self) -> f32 { self.x }
     pub fn y(&self) -> f32 { self.y }
     pub fn width(&self) -> f32 { self.width }
@@ -62,6 +87,9 @@ impl Object {
         let mut result = Self::default();
         for attr in object_node.attributes() {
             match attr.name() {
+                "id" => result.id = attr.value().parse()?,
+                "name" => result.name = attr.value().into(),
+                "type" => result.typ = attr.value().into(),
                 "x" => result.x = attr.value().parse()?,
                 "y" => result.y = attr.value().parse()?,
                 "width" => result.width = attr.value().parse()?,
@@ -106,7 +134,7 @@ impl FromStr for DrawOrder {
 }
 
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub enum ObjectKind {
     #[default]
     Rectangle,
@@ -131,7 +159,7 @@ impl ObjectKind {
         if let Some(points) = node.attribute("points") {
             parse_points(points, &mut result)?;
         }
-        Ok(Self::Polyline(result))
+        Ok(Self::Polygon(result))
     }
 }
 
@@ -146,8 +174,9 @@ fn parse_points(points: &str, result: &mut Vec<(f32, f32)>) -> Result<()> {
     Ok(())
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Text {
+    value: String,
     font_family: Option<String>,
     pixel_size: f32,
     wrap: bool,
@@ -164,6 +193,7 @@ pub struct Text {
 impl Default for Text {
     fn default() -> Self {
         Self {
+            value: "".into(),
             font_family: None,
             pixel_size: 16.0,
             wrap: false,
@@ -180,6 +210,7 @@ impl Default for Text {
 }
 
 impl Text {
+    pub fn value(&self) -> &str { &self.value }
     pub fn font_family(&self) -> &str {
         match &self.font_family {
             Some(font_family) => &font_family,
@@ -214,6 +245,9 @@ impl Text {
                 "valign" => result.valign = attr.value().parse()?,
                 _ => {}
             }
+        }
+        if let Some(value) = text_node.text() {
+            result.value = value.into()
         }
         Ok(result)
     }

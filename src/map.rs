@@ -232,17 +232,20 @@ mod test {
     }
 
     #[test]
-    fn test_image() {
-
-        // Loads map and gets first layer
+    fn test_image_layer() {
         let xml = include_str!("test_data/infinite.tmx");
         let map = TiledMap::parse_str(xml).unwrap();
-        let layer = map.layers()
-            .iter()
-            .find(|layer| layer.name() == "background")
-            .unwrap();
+        let layer = map.layers().iter().find(|layer| layer.name() == "background").unwrap();
+        let image_layer = layer.as_image_layer().unwrap();
+        assert_eq!("images/pepe.png", image_layer.image().source());
+    }
 
-        // Checks the contents of those tiles
-        println!("{layer:#?}");
+    #[test]
+    fn test_object_layer() {
+        let xml = include_str!("test_data/finite.tmx");
+        let map = TiledMap::parse_str(xml).unwrap();
+        let layer = map.layers().iter().find(|layer| layer.name() == "objects").unwrap();
+        let object_layer = layer.as_object_group_layer().unwrap();
+        println!("{object_layer:#?}");
     }
 }
