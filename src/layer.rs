@@ -163,7 +163,6 @@ impl TileLayer {
     pub fn region(&self) -> TileLayerRegion { self.region }
 
     /// Gets the [`Gid`] of the tile at the specified coordinates.
-    /// If out of bounds, returns [`Gid::Null`].
     pub fn gid_at(&self, x: i32, y: i32) -> Gid {
         let x = x - self.region.x;
         let y = y - self.region.y;
