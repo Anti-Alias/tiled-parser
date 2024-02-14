@@ -231,72 +231,18 @@ mod test {
         assert_eq!(Some((expected_x, expected_y, expected_gid)), gids.next());
     }
 
-    // #[test]
-    // fn test_image() {
+    #[test]
+    fn test_image() {
 
-    //     // Loads map and gets first layer
-    //     let xml = include_str!("test_data/infinite.tmx");
-    //     let map = TiledMap::parse_str(xml).unwrap();
-    //     let layer = map.layers()
-    //         .iter()
-    //         .find(|layer| layer.name() == "background")
-    //         .unwrap();
+        // Loads map and gets first layer
+        let xml = include_str!("test_data/infinite.tmx");
+        let map = TiledMap::parse_str(xml).unwrap();
+        let layer = map.layers()
+            .iter()
+            .find(|layer| layer.name() == "background")
+            .unwrap();
 
-    //     // Checks the contents of those tiles
-    //     println!("{layer:#?}");
-    // }
-
-    // #[test]
-    // fn test_flip() {
-
-    //     // Loads map and gets first layer
-    //     let xml = include_str!("test_data/flip.tmx");
-    //     let map = TiledMap::parse_str(xml).unwrap();
-    //     let layer = &map.layers()[0];
-    //     let tile_layer = layer.as_tile_layer().unwrap();
-        
-    //     // Gets ids of numerous tiles
-    //     let gid = tile_layer.gid_at(0, 0);
-    //     let gid_rot_90 = tile_layer.gid_at(1, 0);
-    //     let gid_rot_180 = tile_layer.gid_at(2, 0);
-    //     let gid_rot_270 = tile_layer.gid_at(3, 0);
-    //     let gid_other_tileset = tile_layer.gid_at(2, 1);
-
-    //     // Checks that they're flipped correctly
-    //     let expected = Gid::Value {
-    //         tileset_index: 0,
-    //         tile_id: 0,
-    //         flip: Flip(0b0000_0000),
-    //     };
-    //     assert_eq!(expected, gid);
-
-    //     let expected = Gid::Value {
-    //         tileset_index: 0,
-    //         tile_id: 0,
-    //         flip: Flip(0b0000_1010),
-    //     };
-    //     assert_eq!(expected, gid_rot_90);
-
-        
-    //     let expected = Gid::Value {
-    //         tileset_index: 0,
-    //         tile_id: 0,
-    //         flip: Flip(0b0000_1100),
-    //     };
-    //     assert_eq!(expected, gid_rot_180);
-
-    //     let expected = Gid::Value {
-    //         tileset_index: 0,
-    //         tile_id: 0,
-    //         flip: Flip(0b0000_0110),
-    //     };
-    //     assert_eq!(expected, gid_rot_270);
-
-    //     let expected = Gid::Value {
-    //         tileset_index: 1,
-    //         tile_id: 0,
-    //         flip: Flip(0b0000_0000),
-    //     };
-    //     assert_eq!(expected, gid_other_tileset);
-    // }
+        // Checks the contents of those tiles
+        println!("{layer:#?}");
+    }
 }
