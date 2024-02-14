@@ -7,6 +7,7 @@ mod object;
 mod properties;
 mod attributes;
 mod error;
+mod utils;
 
 pub use map::*;
 pub use tileset::*;
@@ -17,3 +18,4 @@ pub use object::*;
 pub use properties::*;
 pub use attributes::*;
 pub use error::*;
+pub(crate) use utils::*;
