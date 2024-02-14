@@ -99,8 +99,8 @@ impl TiledMap {
             let name = attribute.name();
             let value = attribute.value();
             match name {
-                "version" => self.version = String::from(value),
-                "class" => self.class = String::from(value),
+                "version" => self.version = value.into(),
+                "class" => self.class = value.into(),
                 "orientation" => self.orientation = Orientation::parse(value)?,
                 "renderorder" => self.render_order = RenderOrder::from_str(value)?,
                 "width" => self.width = value.parse()?,
@@ -298,6 +298,24 @@ mod test {
     }
 
     #[test]
+    fn test_hexagonal() {
+        let xml = include_str!("test_data/hexagonal.tmx");
+        let _map = TiledMap::parse_str(xml).unwrap();
+    }
+
+    #[test]
+    fn test_isometric() {
+        let xml = include_str!("test_data/isometric.tmx");
+        let _map = TiledMap::parse_str(xml).unwrap();
+    }
+
+    #[test]
+    fn test_isometric_staggered() {
+        let xml = include_str!("test_data/isometric_staggered.tmx");
+        let _map = TiledMap::parse_str(xml).unwrap();
+    }
+
+    #[test]
     fn test_iter() {
 
         let xml = include_str!("test_data/infinite.tmx");
@@ -334,4 +352,5 @@ mod test {
         let object_layer = layer.as_object_group_layer().unwrap();
         println!("{object_layer:#?}");
     }
+    
 }

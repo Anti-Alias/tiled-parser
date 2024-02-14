@@ -8,6 +8,7 @@ pub enum Orientation {
     Orthogonal,
     Isometric,
     Staggered,
+    Hexagonal,
 }
 
 impl Orientation {
@@ -16,6 +17,7 @@ impl Orientation {
             "orthogonal" => Ok(Self::Orthogonal),
             "isometric" => Ok(Self::Isometric),
             "staggered" => Ok(Self::Staggered),
+            "hexagonal" => Ok(Self::Hexagonal),
             _ => Err(Error::ParsingError),
         }
     }
