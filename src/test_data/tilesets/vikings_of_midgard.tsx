@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.10.1" name="vikings_of_midgard" tilewidth="20" tileheight="20" tilecount="160" columns="16">
+ <properties>
+  <property name="best_color" type="color" value="#ff83947b"/>
+ </properties>
  <image source="vikings_of_midgard.png" trans="ff00ff" width="320" height="200"/>
  <tile id="0">
   <properties>

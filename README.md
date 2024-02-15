@@ -1,11 +1,11 @@
 # Tiled Parser
 A simple parser for [Tiled](https://www.mapeditor.org/) .tmx and .tsx files, designed for integration with game engines.
 
-## Goals
+## Goal
 Provide a parser that conforms to the vast majority of the .tmx and .tsx spec, starting from version 1.0 and beyond.
 
 ## Non-Goals
-* Loading external tilesets referenced by maps. How external resources are loaded can depend a lot on the game engine using it, so it is intentionally left out.
+* Loading external tilesets referenced by maps. How external resources are loaded can vary from game engine to game engine, so it is intentionally left out.
 * Parsing editor-specific features like wangsets, terrains, etc.
 * Rendering maps.
 
@@ -34,7 +34,7 @@ fn main() {
     for layer in map.layers() {
         match layer.kind() {
 
-            // Iterating over tile layers
+            // Handling a tile layer
             LayerKind::TileLayer(tile_layer) => for (tile_x, tile_y, tile_gid) in tile_layer.gids() {
                 let (tileset_index, tile_id) = map.tile_location_of(tile_gid).unwrap();
                 let tileset_entry = &map.tileset_entries()[tileset_index];
@@ -49,7 +49,7 @@ fn main() {
                 }
             },
 
-            // Iterating over a group layer
+            // Handling a group layer
             LayerKind::GroupLayer(group_layer) => {
                 for layer in group_layer.layers() {
                     match layer.kind() {
@@ -61,7 +61,7 @@ fn main() {
                 }
             },
 
-            // Iterating over an image layer
+            // Handling an image layer
             LayerKind::ImageLayer(image_layer) => {
                 let image = image_layer.image();
                 let source = image.source();
@@ -69,7 +69,7 @@ fn main() {
                 let height = image.height();
             },
 
-            // Iterating over an object layer
+            // Handling an object layer
             LayerKind::ObjectGroupLayer(object_layer) => {
                 for object in object_layer.objects() {
                     let props = object.properties();

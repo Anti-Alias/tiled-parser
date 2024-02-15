@@ -4,7 +4,7 @@ use roxmltree::{Document, Node};
 use crate::{Color, Error, Gid, Layer, Orientation, Properties, Result, Tileset};
 
 
-/// A TiledMap parsed from a map file.
+/// A tiled map parsed from a map file.
 #[derive(Debug)]
 pub struct Map {
     version: String,

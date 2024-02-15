@@ -2,7 +2,7 @@ use std::collections::hash_map::Iter as HashMapIter;
 use std::collections::HashMap;
 use std::io::Read;
 use roxmltree::{Document, Node};
-use crate::{Error, Image, Orientation, Result, Tile, TileData, TileOffset};
+use crate::{Error, Image, Orientation, Properties, Result, Tile, TileData, TileOffset};
 
 
 /// A tileset parsed from a tileset file, or a map file when embedded.
@@ -19,6 +19,7 @@ pub struct Tileset {
     object_alignment: ObjectAlignment,
     tile_render_size: TileRenderSize,
     fill_mode: FillMode,
+    properties: Properties,
     tile_offset: TileOffset,
     grid: Option<Grid>,
     image: Option<Image>,
@@ -37,6 +38,7 @@ impl Tileset {
     pub fn object_alignment(&self) -> ObjectAlignment { self.object_alignment }
     pub fn tile_render_size(&self) -> TileRenderSize { self.tile_render_size }
     pub fn fill_mode(&self) -> FillMode { self.fill_mode }
+    pub fn properties(&self) -> &Properties { &self.properties }
     pub fn tile_offset(&self) -> TileOffset { self.tile_offset }
     pub fn grid(&self) -> Option<Grid> { self.grid }
     pub fn image(&self) -> Option<&Image> { self.image.as_ref() }
@@ -115,6 +117,7 @@ impl Tileset {
         // Process children
         for child in tileset_node.children() {
             match child.tag_name().name() {
+                "properties" => self.properties = Properties::parse(child)?,
                 "tileoffset" => self.tile_offset = TileOffset::parse(child)?,
                 "grid" => self.grid = Some(Grid::parse(child)?),
                 "tile" => {
