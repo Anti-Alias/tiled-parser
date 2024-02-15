@@ -35,7 +35,7 @@ fn main() {
         match layer.kind() {
 
             // Iterating over tile layers
-            LayerKind::TileLayer(tile_layer) => for (_tile_x, _tile_y, tile_gid) in tile_layer.gids() {
+            LayerKind::TileLayer(tile_layer) => for (tile_x, tile_y, tile_gid) in tile_layer.gids() {
                 let (tileset_index, tile_id) = map.tile_location_of(tile_gid).unwrap();
                 let tileset_entry = &map.tileset_entries()[tileset_index];
                 let tileset = match tileset_entry.kind() {
@@ -44,7 +44,7 @@ fn main() {
                 };
                 let tile = tileset.tile(tile_id).unwrap();
                 let props = tile.properties();
-                for (_name, _value) in props.iter() {
+                for (name, value) in props.iter() {
                     // Do stuff with tile props
                 }
             },
@@ -64,17 +64,17 @@ fn main() {
             // Iterating over an image layer
             LayerKind::ImageLayer(image_layer) => {
                 let image = image_layer.image();
-                let _source = image.source();
-                let _width = image.width();
-                let _height = image.height();
+                let source = image.source();
+                let width = image.width();
+                let height = image.height();
             },
 
             // Iterating over an object layer
             LayerKind::ObjectGroupLayer(object_layer) => {
                 for object in object_layer.objects() {
                     let props = object.properties();
-                    let is_steve: &PropertyValue = props.get("is_steve").unwrap();
-                    let _is_steve: bool = is_steve.as_bool().unwrap();
+                    let is_steve = props.get("is_steve").unwrap();
+                    let is_steve: bool = is_steve.as_bool().unwrap();
                 }
             },
         }
@@ -95,7 +95,7 @@ fn main() {
         Some(image) => {
             let image_source: &str = image.source();
             for tile in tileset.tiles() {
-                let _props = tile.properties();
+                let props = tile.properties();
                 let TilesetRegion { x, y, width, height } = tile.region().unwrap(); // Pixel region of tile in tileset's image
             }
         },
@@ -103,7 +103,7 @@ fn main() {
         // Image-collection tileset
         None => {
             for tile in tileset.tiles() {
-                let _props = tile.properties();
+                let props = tile.properties();
                 let region = tile.region(); // None, since it's an image-collection tileset.
             }
         },
