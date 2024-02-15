@@ -1,7 +1,7 @@
 use std::io::Read;
 use std::str::FromStr;
 use roxmltree::{Document, Node};
-use crate::{Color, Error, Layer, Orientation, Properties, Result, Tileset};
+use crate::{Color, Error, Gid, Layer, Orientation, Properties, Result, Tileset};
 
 
 /// A TiledMap parsed from a map file.
@@ -71,6 +71,18 @@ impl Map {
     pub fn infinite(&self) -> bool { self.infinite }
     pub fn layers(&self) -> &[Layer] { &self.layers }
     pub fn properties(&self) -> &Properties{ &self.properties }
+
+    /// Tileset index and local tile id of a [`Tile`](crate::Tile).
+    pub fn tile_location_of(&self, gid: Gid) -> Option<(usize, u32)> {
+        let gid = gid.value();
+        for (tileset_idx, tileset) in self.tileset_entries.iter().rev().enumerate() {
+            if gid >= tileset.first_gid {
+                let tile_id = gid - tileset.first_gid;
+                return Some((tileset_idx, tile_id));
+            }
+        }
+        None
+    }
 
     pub fn parse(mut read: impl Read) -> Result<Self> {
         let mut xml_str = String::new();

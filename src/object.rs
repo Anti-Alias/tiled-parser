@@ -82,6 +82,8 @@ impl Object {
     pub fn rotation(&self) -> f32 { self.rotation }
     pub fn gid(&self) -> Option<Gid> { self.gid }
     pub fn visible(&self) -> bool { self.visible }
+    pub fn properties(&self) -> &Properties { &self.properties }
+    pub fn kind(&self) -> &ObjectKind { &self.kind }
 
     fn parse(object_node: Node) -> Result<Self> {
         let mut result = Self::default();

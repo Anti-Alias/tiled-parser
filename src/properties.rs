@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, hash_map};
 use roxmltree::Node;
 use crate::{Color, Result, Error};
 
@@ -6,6 +6,10 @@ use crate::{Color, Result, Error};
 #[derive(Clone, Default, Debug)]
 pub struct Properties(HashMap<String, PropertyValue>);
 impl Properties {
+
+    pub fn iter(&self) -> Props<'_> {
+        Props { iter: self.0.iter() }
+    }
 
     pub fn get(&self, name: &str) -> Option<&PropertyValue> {
         self.0.get(name)
@@ -110,5 +114,17 @@ impl PropertyValue {
             PropertyValue::File(file) => Some(&file),
             _ => None,
         }
+    }
+}
+
+/// An iterator over a [`Properties`] object.
+pub struct Props<'a> {
+    iter: hash_map::Iter<'a, String, PropertyValue>
+}
+
+impl<'a> Iterator for Props<'a> {
+    type Item = (&'a str, &'a PropertyValue);
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iter.next().map(|(key, value)| (key.as_str(), value) )
     }
 }

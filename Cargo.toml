@@ -1,5 +1,5 @@
 [package]
-name = "tiled-tmx-rs"
+name = "tiled-parser"
 version = "0.1.0"
 edition = "2021"
 description = "Alternate tmx and txs parsers without loading logic"
