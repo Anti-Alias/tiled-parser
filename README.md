@@ -7,6 +7,7 @@ Provide a parser that conforms to the vast majority of the .tmx and .tsx spec, s
 ## Non-Goals
 * Loading external tilesets referenced by maps. How external resources are loaded can depend a lot on the game engine using it, so it is intentionally left out.
 * Parsing editor-specific features like wangsets, terrains, etc.
+* Rendering maps.
 
 ## Supports
 * Parsing .tmx and .tsx files
