@@ -290,24 +290,20 @@ mod test {
 
     #[test]
     fn test_finite() {
-
         let xml = include_str!("test_data/finite.tmx");
         let map = Map::parse_str(xml).unwrap();
         let layer = map.layers().iter().find(|layer| layer.name() == "below").unwrap();
         let tile_layer = layer.as_tile_layer().unwrap();
-
         assert_eq!(Gid(2147484833), tile_layer.gid_at(0, 0));
         assert_eq!(Gid(98), tile_layer.gid_at(5, 2));
     }
 
     #[test]
     fn test_infinite() {
-
         let xml = include_str!("test_data/infinite.tmx");
         let map = Map::parse_str(xml).unwrap();
         let layer = map.layers().iter().find(|layer| layer.name() == "below").unwrap();
         let tile_layer = layer.as_tile_layer().unwrap();
-
         assert_eq!(Gid(2147484833), tile_layer.gid_at(0, 0));
         assert_eq!(Gid(98), tile_layer.gid_at(5, 2));
     }
@@ -332,7 +328,6 @@ mod test {
 
     #[test]
     fn test_iter() {
-
         let xml = include_str!("test_data/infinite.tmx");
         let map = Map::parse_str(xml).unwrap();
         let layer = map.layers().iter().find(|layer| layer.name() == "below").unwrap();
@@ -367,5 +362,4 @@ mod test {
         let object_layer = layer.as_object_group_layer().unwrap();
         println!("{object_layer:#?}");
     }
-    
 }
