@@ -2,7 +2,7 @@ use std::collections::hash_map::Iter as HashMapIter;
 use std::collections::HashMap;
 use std::io::Read;
 use roxmltree::{Document, Node};
-use crate::{Error, Image, Orientation, Properties, Result, Tile, TileData, TileOffset};
+use crate::{Error, Image, Orientation, Properties, Result, Tile, TileOffset};
 
 
 /// A tileset parsed from a tileset file, or a map file when embedded.
@@ -23,7 +23,7 @@ pub struct Tileset {
     tile_offset: TileOffset,
     grid: Option<Grid>,
     image: Option<Image>,
-    tiles: HashMap<u32, TileData>,
+    tiles: HashMap<u32, Tile>,
 }
 
 impl Tileset {
@@ -44,21 +44,20 @@ impl Tileset {
     pub fn image(&self) -> Option<&Image> { self.image.as_ref() }
     pub fn tiles(&self) -> Tiles<'_> {
         Tiles {
-            tileset: self,
             iter: self.tiles.iter(),
         }
     }
 
     /// Gets a tile using its local id.
     /// None if not found.
-    pub fn tile(&self, id: u32) -> Option<Tile<'_>> {
-        self.tiles.get(&id).map(|data| Tile::new(id, self, data))
+    pub fn tile(&self, id: u32) -> Option<&Tile> {
+        self.tiles.get(&id)
     }
 
     /// Gets a tile using its x,y coordinates in the tileset.
     /// None if out of bounds.
     /// None if this is an image collection tileset.
-    pub fn tile_at(&self, x: u32, y: u32) -> Option<Tile<'_>> {
+    pub fn tile_at(&self, x: u32, y: u32) -> Option<&Tile> {
         if self.image.is_none() { return None }
         if x > self.columns { return None }
         let id = y * self.columns + x;
@@ -110,7 +109,7 @@ impl Tileset {
         if let Some(image) = image {
             self.image = Some(image);
             for id in 0..self.tile_count {
-                self.tiles.insert(id, TileData::default());
+                self.tiles.insert(id, Tile::default());
             }
         }
 
@@ -121,7 +120,7 @@ impl Tileset {
                 "tileoffset" => self.tile_offset = TileOffset::parse(child)?,
                 "grid" => self.grid = Some(Grid::parse(child)?),
                 "tile" => {
-                    let (id, data) = TileData::parse(child)?;
+                    let (id, data) = Tile::parse(child)?;
                     self.tiles.insert(id, data);
                 },
                 _ => {}
@@ -143,13 +142,12 @@ fn parse_image(tileset_node: Node) -> Result<Option<Image>> {
 
 /// Iterator over tiles in a tileset.
 pub struct Tiles<'a> {
-    tileset: &'a Tileset,
-    iter: HashMapIter<'a, u32, TileData>,
+    iter: HashMapIter<'a, u32, Tile>,
 }
 impl<'a> Iterator for Tiles<'a> {
-    type Item = Tile<'a>;
+    type Item = (u32, &'a Tile);
     fn next(&mut self) -> Option<Self::Item> {
-        self.iter.next().map(|(id, data)| Tile::new(*id, self.tileset, data))
+        self.iter.next().map(|(tile_id, tile)| (*tile_id, tile))
     }
 }
 

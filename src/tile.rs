@@ -1,50 +1,10 @@
 use roxmltree::Node;
-use crate::{Image, ObjectGroupLayer, Properties, Result, Tileset};
+use crate::{Image, ObjectGroupLayer, Properties, Result};
+
 
 /// A tile belonging to a [`Tileset`].
-#[derive(Clone, Debug)]
-pub struct Tile<'a> {
-    id: u32,
-    tileset: &'a Tileset,
-    data: &'a TileData,
-}
-
-impl<'a> Tile<'a> {
-    pub(crate) fn new(id: u32, tileset: &'a Tileset, data: &'a TileData) -> Self {
-        Self { id, tileset, data }
-    }
-    pub fn id(&self) -> u32 { self.id }
-    pub fn typ(&self) -> &str { &self.data.typ }
-    pub fn properties(&self) -> &Properties { &self.data.properties }
-    pub fn image(&self) -> Option<&Image> { self.data.image.as_ref() }
-    pub fn x(&self) -> Option<u32> { self.data.x }
-    pub fn y(&self) -> Option<u32> { self.data.y }
-    pub fn width(&self) -> Option<u32> { self.data.width }
-    pub fn height(&self) -> Option<u32> { self.data.height }
-    pub fn animation(&self) -> Option<&'a Animation> { self.data.animation.as_ref() }
-    pub fn objects(&self) -> Option<&'a ObjectGroupLayer> { self.data.objects.as_ref() }
-    pub fn tileset(&self) -> &'a Tileset { self.tileset }
-
-    /// Region of an image this tile belongs to (in pixels).
-    /// None if the tileset it belongs to is a collection.
-    /// Useful when computing UVs.
-    pub fn region(&self) -> Option<TilesetRegion> {
-        if self.tileset.image().is_none() { return None }
-        let columns = self.tileset.columns();
-        let tile_width = self.tileset.tile_width();
-        let tile_height = self.tileset.tile_height();
-        let tile_x = self.id % columns;
-        let tile_y = self.id / columns;
-        let x = tile_x * tile_width;
-        let y = tile_y * tile_height;
-        let width = x + tile_width;
-        let height = y + tile_height;
-        Some(TilesetRegion { x, y, width, height })
-    }
-}
-
 #[derive(Clone, Default, Debug)]
-pub(crate) struct TileData {
+pub struct Tile {
     typ: String,
     properties: Properties,
     image: Option<Image>,
@@ -56,8 +16,18 @@ pub(crate) struct TileData {
     objects: Option<ObjectGroupLayer>,
 }
 
-impl TileData {
-    pub fn parse(tile_node: Node) -> Result<(u32, TileData)> {
+impl Tile {
+    pub fn typ(&self) -> &str { &self.typ }
+    pub fn properties(&self) -> &Properties { &self.properties }
+    pub fn image(&self) -> Option<&Image> { self.image.as_ref() }
+    pub fn x(&self) -> Option<u32> { self.x }
+    pub fn y(&self) -> Option<u32> { self.y }
+    pub fn width(&self) -> Option<u32> { self.width }
+    pub fn height(&self) -> Option<u32> { self.height }
+    pub fn animation(&self) -> Option<&Animation> { self.animation.as_ref() }
+    pub fn objects(&self) -> Option<&ObjectGroupLayer> { self.objects.as_ref() }
+
+    pub(crate) fn parse(tile_node: Node) -> Result<(u32, Tile)> {
 
         // Attributes
         let mut id = 0;
