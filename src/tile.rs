@@ -2,7 +2,7 @@ use roxmltree::Node;
 use crate::{Image, ObjectGroupLayer, Properties, Result};
 
 
-/// A tile belonging to a [`Tileset`].
+/// A tile belonging to a [`Tileset`](crate::Tileset).
 #[derive(Clone, Default, Debug)]
 pub struct Tile {
     typ: String,

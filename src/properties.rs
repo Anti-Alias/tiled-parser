@@ -4,7 +4,7 @@ use crate::{Color, Result, Error};
 
 /// A set of properties.
 #[derive(Clone, Default, Debug)]
-pub struct Properties(HashMap<String, PropertyValue>);
+pub struct Properties(pub(crate) HashMap<String, PropertyValue>);
 impl Properties {
 
     pub fn iter(&self) -> Props<'_> {
@@ -44,6 +44,14 @@ impl Properties {
         let value = PropertyValue::parse(str_value, str_type)?;
         self.0.insert(name.into(), value);
         Ok(())
+    }
+}
+
+impl<'a> IntoIterator for &'a Properties {
+    type Item = (&'a str, &'a PropertyValue);
+    type IntoIter = Props<'a>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
     }
 }
 
@@ -126,5 +134,34 @@ impl<'a> Iterator for Props<'a> {
     type Item = (&'a str, &'a PropertyValue);
     fn next(&mut self) -> Option<Self::Item> {
         self.iter.next().map(|(key, value)| (key.as_str(), value) )
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use std::collections::HashMap;
+    use crate::{Properties, PropertyValue};
+
+    #[test]
+    fn test_properties() {
+        let mut properties: HashMap<String, PropertyValue> = HashMap::new();
+        properties.insert("steve".into(), PropertyValue::Bool(true));
+        properties.insert("sarah".into(), PropertyValue::Float(3.14));
+        let properties = Properties(properties);
+        let mut steve = None;
+        let mut sarah = None;
+        for (prop_name, prop_value) in &properties {
+            match prop_name {
+                "steve" => steve = Some(prop_value),
+                "sarah" => sarah = Some(prop_value),
+                _ => {}
+            }
+        }
+        assert_eq!(Some(&PropertyValue::Bool(true)), steve);
+        assert_eq!(Some(&PropertyValue::Bool(true)), properties.get("steve"));
+        assert_eq!(Some(&PropertyValue::Float(3.14)), sarah);
+        assert_eq!(Some(&PropertyValue::Float(3.14)), properties.get("sarah"));
+        assert_eq!(None, properties.get("samuel"));
     }
 }
