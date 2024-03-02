@@ -75,7 +75,7 @@ impl Map {
     /// Tileset index and local tile id of a [`Tile`](crate::Tile).
     pub fn tile_location_of(&self, gid: Gid) -> Option<(usize, u32)> {
         let gid = gid.value();
-        for (tileset_idx, tileset) in self.tileset_entries.iter().rev().enumerate() {
+        for (tileset_idx, tileset) in self.tileset_entries.iter().enumerate().rev() {
             if gid >= tileset.first_gid {
                 let tile_id = gid - tileset.first_gid;
                 return Some((tileset_idx, tile_id));
