@@ -104,7 +104,7 @@ pub struct Gid(pub u32);
 impl Gid {
     pub const NULL: Self = Gid(0);
 
-    const FLIP_FLAGS: u32                       = 0b11110000_00000000_00000000_00000000;
+    const FLIP_MASK: u32                        = 0b00001111_11111111_11111111_11111111;
     pub const FLIPPED_HORIZONTALLY_FLAG: u32    = 0b10000000_00000000_00000000_00000000;
     pub const FLIPPED_VERTICALLY_FLAG: u32      = 0b01000000_00000000_00000000_00000000;
     pub const FLIPPED_DIAGONALLY_FLAG: u32      = 0b00100000_00000000_00000000_00000000;
@@ -112,7 +112,7 @@ impl Gid {
 
     /// GID as an integer, with flip/rotation information stripped out.
     /// Use this when looking up tilesets.
-    pub fn value(self) -> u32 { self.0 & Self::FLIP_FLAGS }
+    pub fn value(self) -> u32 { self.0 & Self::FLIP_MASK }
 
     pub fn is_flipped_horizontally(self) -> bool {
         self.0 & Self::FLIPPED_HORIZONTALLY_FLAG != 0

@@ -299,6 +299,18 @@ mod test {
     }
 
     #[test]
+    fn test_tile_location() {
+        let xml = include_str!("test_data/finite.tmx");
+        let map = Map::parse_str(xml).unwrap();
+        let layer = map.layers().iter().find(|layer| layer.name() == "shape").unwrap();
+        let tile_layer = layer.as_tile_layer().unwrap();
+        let tile_gid = tile_layer.gid_at(3, 0);
+        let (tileset_index, tile_id) = map.tile_location_of(tile_gid).unwrap();
+        assert_eq!(1, tileset_index);
+        assert_eq!(103, tile_id);
+    }
+
+    #[test]
     fn test_infinite() {
         let xml = include_str!("test_data/infinite.tmx");
         let map = Map::parse_str(xml).unwrap();

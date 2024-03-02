@@ -61,7 +61,7 @@
 </data>
   </layer>
  </group>
- <layer id="5" name="shape" width="10" height="10" visible="0">
+ <layer id="5" name="shape" width="10" height="10">
   <data encoding="csv">
 0,0,0,264,228,266,0,0,0,0,
 0,233,0,259,292,261,0,233,0,0,
