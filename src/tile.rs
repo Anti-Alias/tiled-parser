@@ -58,15 +58,6 @@ impl Tile {
     }
 }
 
-/// The region (in pixels) of an image a tile resides in.
-#[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
-pub struct TilesetRegion {
-    pub x: u32,
-    pub y: u32,
-    pub width: u32,
-    pub height: u32,
-}
-
 /// Global id of a tile in a [`Map`](crate::Map).
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Default, Debug)]
 pub struct Gid(pub u32);
