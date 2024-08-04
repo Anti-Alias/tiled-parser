@@ -1,7 +1,6 @@
 use std::io::Read;
 use base64::prelude::*;
 use roxmltree::Node;
-use flate2::read::{GzDecoder, ZlibDecoder};
 use crate::{parse_bool, Color, Error, Gid, Image, ObjectGroupLayer, Properties, Result};
 
 
@@ -499,18 +498,21 @@ fn parse_tile_gids(layer_data: &str, encoding: Option<&str>, compression: Option
             let parsed = parse_bytes(decoded.as_slice())?;
             Ok(parsed)
         },
+        #[cfg(feature = "flate2")]
         (Some("base64"), Some("gzip")) => {
             let decoded = decode_base64(layer_data.as_bytes()).map_err(|_| Error::DecodeLayerError)?;
-            let decompressed = GzDecoder::new(decoded.as_slice());
+            let decompressed = flate2::read::GzDecoder::new(decoded.as_slice());
             let parsed = parse_bytes(decompressed)?;
             Ok(parsed)
         },
+        #[cfg(feature = "flate2")]
         (Some("base64"), Some("zlib")) => {
             let decoded = decode_base64(layer_data.as_bytes()).map_err(|_| Error::DecodeLayerError)?;
-            let decompressed = ZlibDecoder::new(decoded.as_slice());
+            let decompressed = flate2::read::ZlibDecoder::new(decoded.as_slice());
             let parsed = parse_bytes(decompressed)?;
             Ok(parsed)
         },
+        #[cfg(feature = "zstd")]
         (Some("base64"), Some("zstd")) => {
             let decoded = decode_base64(layer_data.as_bytes())?;
             let decompressed = zstd::stream::Decoder::new(decoded.as_slice()).map_err(|_| Error::DecodeLayerError)?;
