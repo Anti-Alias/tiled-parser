@@ -5,7 +5,7 @@ use thiserror::Error;
 /// Any error that can occur during parsing.
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("Failed to parse tmx file")]
+    #[error("Failed to parse file")]
     ParsingError,
     #[error(transparent)]
     IOError(#[from] std::io::Error),
@@ -15,6 +15,8 @@ pub enum Error {
     DecodeLayerError,
     #[error("XML parsing failed")]
     XmlParsingError,
+    #[error("JSON parsing failed")]
+    JsonParsingError,
 }
 
 impl From<ParseBoolError> for Error {
@@ -38,6 +40,12 @@ impl From<ParseFloatError> for Error {
 impl From<roxmltree::Error> for Error {
     fn from(_value: roxmltree::Error) -> Self {
         Self::XmlParsingError
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(_value: serde_json::Error) -> Self {
+        Self::JsonParsingError
     }
 }
 
