@@ -3,7 +3,7 @@ use crate::Result;
 
 #[derive(Deserialize, Clone, Eq, PartialEq, Debug)]
 pub struct World {
-    pub maps: Vec<WorldMap>,
+    pub maps: Vec<MapRef>,
 }
 
 impl World {
@@ -15,7 +15,7 @@ impl World {
 
 
 #[derive(Deserialize, Clone, Eq, PartialEq, Debug)]
-pub struct WorldMap {
+pub struct MapRef {
     #[serde(rename = "fileName")]
     pub file_name: String,
     pub height: u32,
@@ -26,7 +26,7 @@ pub struct WorldMap {
 
 #[cfg(test)]
 mod test {
-    use crate::{World, WorldMap};
+    use crate::{World, MapRef};
 
     #[test]
     fn test_deserialize() {
@@ -53,14 +53,14 @@ mod test {
         let actual = World::parse_str(json).unwrap();
         let expected = World {
             maps: vec![
-                WorldMap {
+                MapRef {
                     file_name: "map_1.tmx".into(),
                     x: 0,
                     y: 0,
                     width: 544,
                     height: 384,
                 },
-                WorldMap {
+                MapRef {
                     file_name: "map_2.tmx".into(),
                     x: 544,
                     y: 0,
