@@ -1,3 +1,4 @@
+use std::io::Read;
 use serde::Deserialize;
 use crate::Result;
 
@@ -7,6 +8,13 @@ pub struct World {
 }
 
 impl World {
+
+    pub fn parse(mut read: impl Read) -> Result<Self> {
+        let mut xml_str = String::new();
+        read.read_to_string(&mut xml_str)?;
+        Self::parse_str(&xml_str)
+    }
+
     pub fn parse_str(json_str: &str) -> Result<Self> {
         let world = serde_json::de::from_str(json_str)?;
         Ok(world)
